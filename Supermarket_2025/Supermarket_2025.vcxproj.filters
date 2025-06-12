@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Models">
-      <UniqueIdentifier>{0f39c9ec-d68e-4e0d-a68d-5104e374c725}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Persistence">
       <UniqueIdentifier>{68943f05-0002-4746-8a3e-b4032f163e82}</UniqueIdentifier>
     </Filter>
@@ -31,10 +28,13 @@
     <Filter Include="Core">
       <UniqueIdentifier>{e7424cf1-38c1-42c1-9aca-fcd69ccef33f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Models1">
+      <UniqueIdentifier>{0f39c9ec-d68e-4e0d-a68d-5104e374c725}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="models.cpp">
-      <Filter>Models</Filter>
+      <Filter>Models1</Filter>
     </ClCompile>
     <ClCompile Include="auth.cpp">
       <Filter>Auth</Filter>
@@ -66,7 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="models.h">
-      <Filter>Models</Filter>
+      <Filter>Models1</Filter>
     </ClInclude>
     <ClInclude Include="auth.h">
       <Filter>Auth</Filter>
