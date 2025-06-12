@@ -28,13 +28,13 @@
     <Filter Include="Core">
       <UniqueIdentifier>{e7424cf1-38c1-42c1-9aca-fcd69ccef33f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Models1">
+    <Filter Include="Models">
       <UniqueIdentifier>{0f39c9ec-d68e-4e0d-a68d-5104e374c725}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="models.cpp">
-      <Filter>Models1</Filter>
+      <Filter>Models</Filter>
     </ClCompile>
     <ClCompile Include="auth.cpp">
       <Filter>Auth</Filter>
@@ -66,7 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="models.h">
-      <Filter>Models1</Filter>
+      <Filter>Models</Filter>
     </ClInclude>
     <ClInclude Include="auth.h">
       <Filter>Auth</Filter>
