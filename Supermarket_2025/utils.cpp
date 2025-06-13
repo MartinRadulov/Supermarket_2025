@@ -58,7 +58,7 @@ void strCopy(char* dest, const char* str, int maxSize)
 
 bool strCompareNoCase(const char* str1, const char* str2)
 {
-	if (str1 == nullptr && str2 == nullptr)
+	if (str1 == nullptr || str2 == nullptr)
 	{
 		return false;
 	}
@@ -69,8 +69,8 @@ bool strCompareNoCase(const char* str1, const char* str2)
 		{
 			return false;
 		}
-		*str1++;
-		*str2++;
+		str1++;
+		str2++;
 	}
 	return *str1 == '\0' && *str2 == '0';
 }
