@@ -18,4 +18,4 @@ bool isValidPassword(const char* password);
 
 bool isValidPrice(const char* priceStr);
 
-//test commit711
+//test commit7111
