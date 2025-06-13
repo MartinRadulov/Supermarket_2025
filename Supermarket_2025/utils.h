@@ -1,10 +1,10 @@
 #pragma once
 
-void strcpy(char* dest, const char* src, int maxSize);
+void strcpy(char* dest, const char* str, int maxSize);
 
-void strCompareNoCase(const char* str1, const char* str2);
+bool strCompareNoCase(const char* str1, const char* str2);
 
-void trimString(char* str);
+void trimStr(char* str);
 
 bool isValidNUmber(const char* str);
 
