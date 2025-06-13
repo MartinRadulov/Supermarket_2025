@@ -18,4 +18,14 @@ bool isValidPassword(const char* password);
 
 bool isValidPrice(const char* priceStr);
 
-//test commit7111
+bool isValidFloat(const char* str);
+
+int getStrLength(const char* str);
+
+char toLowerCase(char c);
+
+char toUpperCase(char c);
+
+bool isWhitespace(char c);
+
+bool isDigitChar(char c);
