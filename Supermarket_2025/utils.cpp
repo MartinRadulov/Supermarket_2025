@@ -104,3 +104,78 @@ void trimStr(char* str)
 	}
 	str[temp] = '\0';
 }
+
+bool isValidNUmber(const char* str)
+{
+	if (str == nullptr || *str == '\0')
+	{
+		return false;
+	}
+
+	if (*str == '+' || *str == '-')
+	{
+		str++;
+	}
+
+	if (*str == '\0')
+	{
+		return false;
+	}
+
+	while (*str != '\0')
+	{
+		if (!isDigitChar(*str))
+		{
+			return false;
+		}
+		str++;
+	}
+
+	return true;
+}
+
+bool isValidFloat(const char* str)
+{
+	if (str == nullptr || *str == '\0')
+	{
+		return false;
+	}
+
+	if (*str == '+' || *str == '-')
+	{
+		str++;
+	}
+
+	if (*str == '\0')
+	{
+		return false;
+	}
+
+	bool hasDecimal = false;
+	bool hasNumber = false;
+	bool hasDigitAfter = false;
+	while (*str != '\0')
+	{
+		if (isDigitChar(*str))
+		{
+			hasNumber = true;
+			str++;
+			if (hasDecimal)
+			{
+				hasDigitAfter = true;
+			}
+		}
+		else if (*str == '.' && !hasDecimal && hasNumber)
+		{	
+			hasDecimal = true;
+			str++;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	return (hasDigitAfter || !hasDecimal);
+}
+
