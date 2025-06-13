@@ -1,12 +1,12 @@
 #pragma once
 
-void strcpy(char* dest, const char* str, int maxSize);
+void strCopy(char* dest, const char* str, int maxSize);
 
-bool strCompareNoCase(const char* str1, const char* str2);
+bool strCompare(const char* str1, const char* str2);
 
 void trimStr(char* str);
 
-bool isValidNUmber(const char* str);
+bool isValidNumber(const char* str);
 
 void getCurrentDate(char* dateStr, int maxSize);
 

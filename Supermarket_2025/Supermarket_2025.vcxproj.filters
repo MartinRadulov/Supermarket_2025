@@ -63,6 +63,9 @@
     <ClCompile Include="main.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="test_utils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="models.h">

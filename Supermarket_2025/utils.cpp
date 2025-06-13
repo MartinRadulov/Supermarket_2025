@@ -56,7 +56,7 @@ void strCopy(char* dest, const char* str, int maxSize)
 	*dest = '\0';
 }
 
-bool strCompareNoCase(const char* str1, const char* str2)
+bool strCompare(const char* str1, const char* str2)
 {
 	if (str1 == nullptr || str2 == nullptr)
 	{
@@ -72,7 +72,7 @@ bool strCompareNoCase(const char* str1, const char* str2)
 		str1++;
 		str2++;
 	}
-	return *str1 == '\0' && *str2 == '0';
+	return *str1 == '\0' && *str2 == '\0';
 }
 
 void trimStr(char* str)
@@ -83,16 +83,14 @@ void trimStr(char* str)
 	}
 
 	int start = 0;
-	while (*str != '\0' && isWhitespace(*str))
+	while (*str != '\0' && isWhitespace(str[start]))
 	{
-		str++;
 		start++;
 	}
 
 	int end = getStrLength(str) - 1;
 	while (end >= start && isWhitespace(str[end]))
 	{
-		str--;
 		end--;
 	}
 
@@ -105,7 +103,7 @@ void trimStr(char* str)
 	str[temp] = '\0';
 }
 
-bool isValidNUmber(const char* str)
+bool isValidNumber(const char* str)
 {
 	if (str == nullptr || *str == '\0')
 	{

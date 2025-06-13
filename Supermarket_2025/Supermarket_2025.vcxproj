@@ -135,6 +135,7 @@
     <ClCompile Include="models.cpp" />
     <ClCompile Include="persistance.cpp" />
     <ClCompile Include="product.cpp" />
+    <ClCompile Include="test_utils.cpp" />
     <ClCompile Include="transaction.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="voucher.cpp" />
