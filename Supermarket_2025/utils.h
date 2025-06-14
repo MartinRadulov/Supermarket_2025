@@ -26,7 +26,7 @@ int getStrLength(const char* str);
 
 char toLowerCase(char c);
 
-char toUpperCase(char c);
+//char toUpperCase(char c);
 
 bool isWhitespace(char c);
 
@@ -35,3 +35,7 @@ bool isDigitChar(char c);
 void intToString(int number, char* str, int maxSize);
 
 void toTwoDigits(int number, char* str);
+
+bool isValidUsername(const char* username);
+
+bool isValidProductName(const char* product);

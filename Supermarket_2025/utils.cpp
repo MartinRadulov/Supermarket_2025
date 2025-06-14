@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <ctime>
 #include "utils.h"
@@ -206,7 +207,7 @@ void intToString(int number, char* str, int maxSize)
 	}
 
 	char temp[20]; 
-	int tempIndex;
+	int tempIndex = 0;
 	while (number > 0 && tempIndex < 19)
 	{
 		temp[tempIndex] = '0' + number % 10;
@@ -214,7 +215,7 @@ void intToString(int number, char* str, int maxSize)
 		tempIndex++;
 	}
 
-	for (int j = tempIndex - 1; j >= 0, startPos < maxSize - 1; j--, startPos++)
+	for (int j = tempIndex - 1; j >= 0 && startPos < maxSize - 1; j--, startPos++)
 	{
 		str[startPos] = temp[j];
 	}
@@ -254,7 +255,7 @@ void getCurrentDate(char* dateStr, int maxSize)
 	struct tm* localTime = localtime(&currentTime);
 	if (localTime == nullptr)
 	{
-		strCopy(dateStr, "00/00/0000");
+		strCopy(dateStr, "00/00/0000", DATE_SIZE);
 		return;
 	}
 
@@ -293,7 +294,7 @@ void getCurrentTime(char* timeStr, int maxSize)
 	struct tm* localTime = localtime(&currentTime);
 	if (localTime == nullptr)
 	{
-		strCopy(dateStr, "00/00/0000 00:00:00");
+		strCopy(timeStr, "00/00/0000 00:00:00", TIME_SIZE);
 		return;
 	}
 
@@ -350,8 +351,8 @@ bool isValidEmail(const char* email)
 		return false;
 	}
 
-	size_t atCount = 0, afterAt = 0;
-	size_t atPos = 0;
+	int atCount = 0, afterAt = 0;
+	int atPos = 0;
 	bool atFound = false;
 	for (int i = 0; i < emailSize; i++)
 	{
@@ -367,7 +368,8 @@ bool isValidEmail(const char* email)
 		}
 
 		char c = email[i];
-		if (c == ' ' || c == '\r' || c == '\t' || c == '\n')
+		if ((!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+			isDigitChar(c) || c == '.' || c == '@')))
 		{
 			return false;
 		}
@@ -402,6 +404,119 @@ bool isValidEmail(const char* email)
 	if (atCount != 1  || afterAt < 3)
 	{
 		return false;
+	}
+
+	return true;
+}
+
+bool isValidPassword(const char* password)
+{
+	if (password == nullptr || (getStrLength(password) < 5 || getStrLength(password) > 50))
+	{
+		return false;
+	}
+
+	int tempSize = getStrLength(password);
+	for (int i = 0; i < tempSize; i++)
+	{
+		char c = password[i];
+		if (isWhitespace(c))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool isValidUsername(const char* username)
+{
+	if (username == nullptr || (getStrLength(username) < 3 || getStrLength(username) > 30))
+	{
+		return false;
+	}
+
+	int tempSize = getStrLength(username);
+	for (int i = 0; i < tempSize; i++)
+	{
+		char c = username[i];
+		if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+			isDigitChar(c)))
+		{
+			return false;
+		}
+	}
+
+	if (isDigitChar(username[0]))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool isValidProductName(const char* product)
+{
+	if (product == nullptr || (getStrLength(product) < 3 || getStrLength(product) > 100))
+	{
+		return false;
+	}
+
+	int tempSize = getStrLength(product);
+	for (int i = 0; i < tempSize; i++)
+	{
+		char c = product[i];
+		if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+			isDigitChar(c) || isWhitespace(c) || c == '-' || c == '_'))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool isValidPrice(const char* price)
+{
+	if (price == nullptr || price[0] == '\0')
+	{
+		return false;
+	}
+
+	int tempSize = getStrLength(price), afterDotCount = 0, dotPos = 0;
+	bool dotFound = false;
+	if (price[0] == '0' && tempSize > 1)
+	{
+		if (price[1] != '.' && price[2] != '\0')
+		{
+			return false;
+		}
+	}
+
+	if (!isValidFloat(price))
+	{
+		return false;
+	}
+
+	for (int i = 0; i < tempSize; i++)
+	{
+		if (price[i] == '.')
+		{
+			dotFound = true;
+			dotPos = i + 1;
+		}
+	}
+
+	if (dotFound)
+	{
+		for (int i = dotPos; i < tempSize; i++)
+		{
+			afterDotCount++;
+		}
+		if (afterDotCount > 2)
+		{
+			return false;
+		}
 	}
 
 	return true;
