@@ -131,8 +131,8 @@
     <ClCompile Include="auth.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="manager.cpp" />
-    <ClCompile Include="models.cpp" />
+    <ClCompile Include="worker_manager.cpp" />
+    <ClCompile Include="workers.cpp" />
     <ClCompile Include="persistance.cpp" />
     <ClCompile Include="product.cpp" />
     <ClCompile Include="test_utils.cpp" />
@@ -142,9 +142,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="auth.h" />
-    <ClInclude Include="manager.h" />
+    <ClInclude Include="worker_manager.h" />
     <ClInclude Include="logger.h" />
-    <ClInclude Include="models.h" />
+    <ClInclude Include="workers.h" />
     <ClInclude Include="persistance.h" />
     <ClInclude Include="product.h" />
     <ClInclude Include="transaction.h" />

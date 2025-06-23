@@ -33,13 +33,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="models.cpp">
+    <ClCompile Include="workers.cpp">
       <Filter>Models</Filter>
     </ClCompile>
     <ClCompile Include="auth.cpp">
       <Filter>Auth</Filter>
     </ClCompile>
-    <ClCompile Include="manager.cpp">
+    <ClCompile Include="worker_manager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="logger.cpp">
@@ -68,13 +68,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="models.h">
+    <ClInclude Include="workers.h">
       <Filter>Models</Filter>
     </ClInclude>
     <ClInclude Include="auth.h">
       <Filter>Auth</Filter>
     </ClInclude>
-    <ClInclude Include="manager.h">
+    <ClInclude Include="worker_manager.h">
       <Filter>Manager</Filter>
     </ClInclude>
     <ClInclude Include="logger.h">

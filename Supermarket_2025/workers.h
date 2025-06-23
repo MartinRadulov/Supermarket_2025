@@ -17,8 +17,8 @@ protected:
 	char phone[20];
 	int age;
 	char password[50];
-	bool isApproved;
-	bool isLoggedIn;
+	bool isApprovedV;
+	bool isLoggedInV;
 
 public:
 	Worker();
@@ -27,10 +27,10 @@ public:
 	virtual ~Worker();
 
 	virtual const char* getRole() const = 0;
-	virtual void dispalyInfo() const = 0;
-	virtual bool hasSpecialPrivlages() const = 0;
+	virtual void displayInfo() const = 0;
+	virtual bool hasSpecialPrivileges() const = 0;
 	
-	virtual bool authenticate() const;
+	virtual bool authenticate(const char* password) const;
 	virtual void saveToFile(std::ofstream& file) const;
 	virtual void loadFromFile(std::ifstream& file);
 
@@ -69,11 +69,11 @@ public:
 
 	void setApproved(bool approved)
 	{
-		isApproved = approved;
+		isApprovedV = approved;
 	}
 	void setLoggedIn(bool loggedIn)
 	{
-		isLoggedIn = loggedIn;
+		isLoggedInV = loggedIn;
 	}
 	void setPassword(const char* newPassword);
 
@@ -90,7 +90,7 @@ private:
 
 public:
 	Warning();
-	Warning(int warningPoints, char warningReason, char warningDate);
+	Warning(int warningPoints, const char* warningReason);
 
 	int getPoints() const
 	{
@@ -126,16 +126,16 @@ public:
 
 	Cashier(const Cashier& other);
 	Cashier& operator=(const Cashier& other);
-	Cashier(const Cashier& other) noexcept;
-	Cashier& operator=(const Cashier& other) noexcept;
+	Cashier(Cashier&& other) noexcept;
+	Cashier& operator=(Cashier&& other) noexcept;
 
 	virtual const char* getRole() const override;
-	virtual void dispalyInfo() const override;
-	virtual bool hasSpecialPrivlages() const override;
+	virtual void displayInfo() const override;
+	virtual bool hasSpecialPrivileges() const override;
 	virtual void saveToFile(std::ofstream& file) const override;
 	virtual void loadFromFile(std::ifstream& file) override;
 
-	void addWarnig(int points, const char* reason);
+	void addWarning(int points, const char* reason);
 	void incrementTransactionCount()
 	{
 		transactionCount++;
@@ -161,7 +161,7 @@ public:
 	}
 
 private:
-	void resizeWaringArray();
+	void resizeWarningArray();
 	void copyWarnings(const Cashier& other);
 	void clearWarnings();
 };
@@ -179,8 +179,8 @@ public:
 	virtual ~Manager();
 
 	virtual const char* getRole() const override;
-	virtual void dispalyInfo() const override;
-	virtual bool hasSpecialPrivlages() const override;
+	virtual void displayInfo() const override;
+	virtual bool hasSpecialPrivileges() const override;
 	virtual void saveToFile(std::ofstream& file) const override;
 	virtual void loadFromFile(std::ifstream& file) override;
 
@@ -189,10 +189,10 @@ public:
 	void saveSpecialCode() const;
 	bool loadSpecialCode();
 
-	bool approvedCashier(const char* providedCode);
-	bool warnCashier(const char* providedCode);
-	bool promoteCashier(const char* providedCode);
-	bool fireCashier(const char* providedCode);
+	bool approveCashier(Cashier* cashier, const char* providedCode);
+	bool warnCashier(Cashier* cashier, int points, const char* reason, const char* providedCode);;
+	bool promoteCashier(Cashier* chasier, const char* providedCode);
+	bool fireCashier(Cashier* chasier, const char* providedCode);
 
 	const char* getSpecialCode() const
 	{
@@ -203,43 +203,44 @@ public:
 	}
 
 private:
-	void getSpecialCodeFilename(char* filename, int maxSize) const;
+	void getSpecialCodeFile(char* filename, int maxSize) const;
 	static char generateRandomDigit();
 	static char generateRandomLowercase();
 	static char generateRandomUppercase();
+	void saveSpecialCodeToFile() const;
+	bool loadSpecialCodeFile();
 };
-
-class WorkerManager
-{
-private:
-	Worker** workers;
-	int workerCount;
-	int workerCapacity;
-
-public:
-	WorkerManager();
-	~WorkerManager();
-
-	bool addWoker(Worker* worker);
-	Worker* findWorkerById(int id);
-	bool removeWorker(int id);
-
-	Worker authenticateWorker(int id, const char* password);
-	bool approveWorker(int id, int managerId, const char* specialCode);
-
-	void saveAllWorkers(const char* filename) const;
-	void loadAllWorkerks(const char* filename);
-
-	void listAllWorkers() const;
-	void listPendingWorkers() const;
-
-	int getWorkerCount() const
-	{
-		return workerCount;
-	}
-
-private:
-	void resizeWorkersArray();
-	void clearWorkers();
-};
+//class WorkerManager
+//{
+//private:
+//	Worker** workers;
+//	int workerCount;
+//	int workerCapacity;
+//
+//public:
+//	WorkerManager();
+//	~WorkerManager();
+//
+//	bool addWoker(Worker* worker);
+//	Worker* findWorkerById(int id);
+//	bool removeWorker(int id);
+//
+//	Worker authenticateWorker(int id, const char* password);
+//	bool approveWorker(int id, int managerId, const char* specialCode);
+//
+//	void saveAllWorkers(const char* filename) const;
+//	void loadAllWorkerks(const char* filename);
+//
+//	void listAllWorkers() const;
+//	void listPendingWorkers() const;
+//
+//	int getWorkerCount() const
+//	{
+//		return workerCount;
+//	}
+//
+//private:
+//	void resizeWorkersArray();
+//	void clearWorkers();
+//};
 
