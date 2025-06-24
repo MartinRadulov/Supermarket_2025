@@ -1,0 +1,10 @@
+RECEIPT
+TRANSACTION_ID:4
+CASHIER_ID:102
+2025-06-24
+--------------------
+Bananas
+2.5*4.2 - 10.5
+###
+VOUCHER: -1.05 (DISC1)
+TOTAL:9.45

@@ -1,0 +1,13 @@
+RECEIPT
+TRANSACTION_ID:1
+CASHIER_ID:101
+2025-06-24
+--------------------
+Bread
+2*2.5 - 5
+###
+Bananas
+1.5*4.2 - 6.3
+###
+VOUCHER: -1.695 (3A1B5)
+TOTAL:9.605

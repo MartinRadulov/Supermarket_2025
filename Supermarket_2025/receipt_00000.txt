@@ -1,0 +1,9 @@
+RECEIPT
+transactionId:0
+cashierId:102
+24/06/2025
+--------------------
+Bananas
+2.5*-9.25596e+61 - 10.5
+###
+TOTAL:9.45

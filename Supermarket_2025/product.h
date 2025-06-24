@@ -189,7 +189,7 @@ public:
     void loadAllCategories(const char* filename);
     void saveAllProducts(const char* filename) const;
     void loadAllProducts(const char* filename);
-    void loadProductsFromReceipt(const char* filename);
+    bool loadProductsFromReceipt(const char* filename);
 
     int getProductCount() const
     {

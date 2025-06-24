@@ -1,0 +1,12 @@
+RECEIPT
+TRANSACTION_ID:3
+CASHIER_ID:101
+2025-06-24
+--------------------
+Bread
+3*2.5 - 7.5
+###
+Milk
+2*3.2 - 6.4
+###
+TOTAL:13.9

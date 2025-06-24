@@ -1,0 +1,16 @@
+RECEIPT
+TRANSACTION_ID:99
+CASHIER_ID:101
+2025-06-24
+--------------------
+Bread
+2*2.5 - 5
+###
+Bananas
+1.5*4.2 - 6.3
+###
+Milk 1L
+1*3.2 - 3.2
+###
+VOUCHER: -1.45 (TEST9)
+TOTAL:13.05

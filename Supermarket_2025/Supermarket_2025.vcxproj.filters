@@ -75,6 +75,9 @@
     <ClCompile Include="product_test.cpp">
       <Filter>Product</Filter>
     </ClCompile>
+    <ClCompile Include="trans_test.cpp">
+      <Filter>Transaction</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="workers.h">

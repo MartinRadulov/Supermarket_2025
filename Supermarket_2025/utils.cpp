@@ -244,97 +244,154 @@ void toTwoDigits(int number, char* str)
 	str[2] = '\0';
 }
 
+//void getCurrentDate(char* dateStr, int maxSize)
+//{
+//	if (dateStr == nullptr || maxSize < DATE_SIZE)
+//	{
+//		return;
+//	}
+//
+//	time_t currentTime = time(nullptr);
+//	struct tm* localTime = localtime(&currentTime);
+//	if (localTime == nullptr)
+//	{
+//		strCopy(dateStr, "00/00/0000", DATE_SIZE);
+//		return;
+//	}
+//
+//	char day[3], month[3], year[5];
+//	dateStr[0] = '\0';
+//	
+//	toTwoDigits(localTime->tm_mday, day);
+//	toTwoDigits(localTime->tm_mon + 1, month);
+//	intToString(localTime->tm_year + 1900, year, 5);
+//
+//	int startPos = 0;
+//	dateStr[startPos++] = day[0];
+//	dateStr[startPos++] = day[1];
+//	dateStr[startPos++] = '/';
+//
+//	dateStr[startPos++] = month[0];
+//	dateStr[startPos++] = month[1];
+//	dateStr[startPos++] = '/';
+//
+//	for (int i = 0; year[i] != '\0' && dateStr[startPos] < maxSize - 1; i++, startPos++)
+//	{
+//		dateStr[startPos] = year[i];
+//	}
+//
+//	dateStr[startPos] = '\0';
+//}
+//
+//void getCurrentTime(char* timeStr, int maxSize)
+//{
+//	if (timeStr == nullptr || maxSize < TIME_SIZE)
+//	{
+//		return;
+//	}
+//
+//	time_t currentTime = time(nullptr);
+//	struct tm* localTime = localtime(&currentTime);
+//	if (localTime == nullptr)
+//	{
+//		strCopy(timeStr, "00/00/0000 00:00:00", TIME_SIZE);
+//		return;
+//	}
+//
+//	char day[3], month[3], year[5];
+//	char sec[3], min[3], hour[3];
+//	timeStr[0] = '\0';
+//
+//	toTwoDigits(localTime->tm_mday, day);
+//	toTwoDigits(localTime->tm_mon + 1, month);
+//	intToString(localTime->tm_year + 1900, year, 5);
+//	toTwoDigits(localTime->tm_sec, sec);
+//	toTwoDigits(localTime->tm_min, min);
+//	toTwoDigits(localTime->tm_hour, hour);
+//
+//	int startPos = 0;
+//	timeStr[startPos++] = day[0];
+//	timeStr[startPos++] = day[1];
+//	timeStr[startPos++] = '/';
+//
+//	timeStr[startPos++] = month[0];
+//	timeStr[startPos++] = month[1];
+//	timeStr[startPos++] = '/';
+//
+//	for (int i = 0; year[i] != '\0' && timeStr[startPos] < maxSize - 1; i++, startPos++)
+//	{
+//		timeStr[startPos] = year[i];
+//	}
+//
+//	timeStr[startPos++] = sec[0];
+//	timeStr[startPos++] = sec[1];
+//	timeStr[startPos++] = ':';
+//
+//	timeStr[startPos++] = min[0];
+//	timeStr[startPos++] = min[1];
+//	timeStr[startPos++] = ':';
+//
+//	timeStr[startPos++] = hour[0];
+//	timeStr[startPos++] = hour[1];
+//
+//	timeStr[startPos] = '\0';
+//}
+
 void getCurrentDate(char* dateStr, int maxSize)
 {
-	if (dateStr == nullptr || maxSize < DATE_SIZE)
-	{
-		return;
-	}
+	if (dateStr == nullptr || maxSize < DATE_SIZE) return;
 
 	time_t currentTime = time(nullptr);
 	struct tm* localTime = localtime(&currentTime);
-	if (localTime == nullptr)
-	{
-		strCopy(dateStr, "00/00/0000", DATE_SIZE);
+	if (localTime == nullptr) {
+		strCopy(dateStr, "2025-01-01", DATE_SIZE);
 		return;
 	}
 
 	char day[3], month[3], year[5];
-	dateStr[0] = '\0';
-	
 	toTwoDigits(localTime->tm_mday, day);
 	toTwoDigits(localTime->tm_mon + 1, month);
 	intToString(localTime->tm_year + 1900, year, 5);
 
-	int startPos = 0;
-	dateStr[startPos++] = day[0];
-	dateStr[startPos++] = day[1];
-	dateStr[startPos++] = '/';
-
-	dateStr[startPos++] = month[0];
-	dateStr[startPos++] = month[1];
-	dateStr[startPos++] = '/';
-
-	for (int i = 0; year[i] != '\0' && dateStr[startPos] < maxSize - 1; i++, startPos++)
-	{
-		dateStr[startPos] = year[i];
-	}
-
-	dateStr[startPos] = '\0';
+	// Format: YYYY-MM-DD
+	int pos = 0;
+	for (int i = 0; year[i] != '\0'; i++) dateStr[pos++] = year[i];
+	dateStr[pos++] = '-';
+	dateStr[pos++] = month[0];
+	dateStr[pos++] = month[1];
+	dateStr[pos++] = '-';
+	dateStr[pos++] = day[0];
+	dateStr[pos++] = day[1];
+	dateStr[pos] = '\0';
 }
 
 void getCurrentTime(char* timeStr, int maxSize)
 {
-	if (timeStr == nullptr || maxSize < TIME_SIZE)
-	{
-		return;
-	}
+	if (timeStr == nullptr || maxSize < TIME_SIZE) return;
 
 	time_t currentTime = time(nullptr);
 	struct tm* localTime = localtime(&currentTime);
-	if (localTime == nullptr)
-	{
-		strCopy(timeStr, "00/00/0000 00:00:00", TIME_SIZE);
+	if (localTime == nullptr) {
+		strCopy(timeStr, "00:00:00", TIME_SIZE);
 		return;
 	}
 
-	char day[3], month[3], year[5];
-	char sec[3], min[3], hour[3];
-	timeStr[0] = '\0';
-
-	toTwoDigits(localTime->tm_mday, day);
-	toTwoDigits(localTime->tm_mon + 1, month);
-	intToString(localTime->tm_year + 1900, year, 5);
-	toTwoDigits(localTime->tm_sec, sec);
-	toTwoDigits(localTime->tm_min, min);
+	char hour[3], min[3], sec[3];
 	toTwoDigits(localTime->tm_hour, hour);
+	toTwoDigits(localTime->tm_min, min);
+	toTwoDigits(localTime->tm_sec, sec);
 
-	int startPos = 0;
-	timeStr[startPos++] = day[0];
-	timeStr[startPos++] = day[1];
-	timeStr[startPos++] = '/';
-
-	timeStr[startPos++] = month[0];
-	timeStr[startPos++] = month[1];
-	timeStr[startPos++] = '/';
-
-	for (int i = 0; year[i] != '\0' && timeStr[startPos] < maxSize - 1; i++, startPos++)
-	{
-		timeStr[startPos] = year[i];
-	}
-
-	timeStr[startPos++] = sec[0];
-	timeStr[startPos++] = sec[1];
-	timeStr[startPos++] = ':';
-
-	timeStr[startPos++] = min[0];
-	timeStr[startPos++] = min[1];
-	timeStr[startPos++] = ':';
-
-	timeStr[startPos++] = hour[0];
-	timeStr[startPos++] = hour[1];
-
-	timeStr[startPos] = '\0';
+	// Format: HH:MM:SS
+	int pos = 0;
+	timeStr[pos++] = hour[0];
+	timeStr[pos++] = hour[1];
+	timeStr[pos++] = ':';
+	timeStr[pos++] = min[0];
+	timeStr[pos++] = min[1];
+	timeStr[pos++] = ':';
+	timeStr[pos++] = sec[0];
+	timeStr[pos++] = sec[1];
+	timeStr[pos] = '\0';
 }
 
 bool isValidEmail(const char* email)

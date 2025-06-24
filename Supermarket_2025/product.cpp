@@ -889,20 +889,18 @@ void ProductManager::loadAllProducts(const char* filename)
     file.close();
 }
 
-void ProductManager::loadProductsFromReceipt(const char* filename)
+bool ProductManager::loadProductsFromReceipt(const char* filename)
 {
     std::ifstream file(filename);
-    if (!file.is_open()) return;
+    if (!file.is_open()) return false;
 
     char line[300];
     while (file.getline(line, 300))
     {
         if (line[0] != '\0')
         {
-
             if (line[0] == 'N' && line[1] == 'E' && line[2] == 'W')
             {
-                // Ako e nujno
                 continue;
             }
             else
@@ -953,6 +951,7 @@ void ProductManager::loadProductsFromReceipt(const char* filename)
     }
 
     file.close();
+    return true;
 }
 
 void ProductManager::resizeProductArray()
