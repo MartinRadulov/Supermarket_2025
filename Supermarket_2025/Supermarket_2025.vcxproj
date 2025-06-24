@@ -132,6 +132,7 @@
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="test_workers.cpp" />
+    <ClCompile Include="voucher_test.cpp" />
     <ClCompile Include="worker_manager.cpp" />
     <ClCompile Include="workers.cpp" />
     <ClCompile Include="persistance.cpp" />

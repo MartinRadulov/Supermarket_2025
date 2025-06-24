@@ -9,7 +9,7 @@ class GiftCard
 protected:
     char code[6];
     T discountValue;
-    bool isUsed;
+    bool isUsedV;
     static int counter;
 
     void generateCode() {
@@ -26,14 +26,14 @@ public:
     GiftCard()
     {
         discountValue = T{};
-        isUsed = false;
+        isUsedV = false;
         generateCode();
     }
 
     GiftCard(const T& value)
     {
         discountValue = value;
-        isUsed = false;
+        isUsedV = false;
         generateCode();
     }
 
@@ -50,16 +50,16 @@ public:
     }
     bool isUsed() const
     {
-        return isUsed;
+        return isUsedV;
     }
     void markAsUsed()
     {
-        isUsed = true;
+        isUsedV = true;
     }
 
     void resetUsed()
     {
-        isUsed = false;
+        isUsedV = false;
     }
 
     virtual void saveToFile(std::ofstream& file) const = 0;
@@ -193,5 +193,11 @@ public:
 
     static AllProductsGiftCard* createAllProducts(double percentage);
 
-    static GiftCard<int>* loadFromString(const char* line);
+    static SingleCategoryGiftCard* loadSingleFromString(const char* line);
+
+    static MultipleCategoryGiftCard* loadMultipleFromString(const char* line);
+
+    static AllProductsGiftCard* loadAllProductsFromString(const char* line);
+
+    static void* loadFromString(const char* line);
 };

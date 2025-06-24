@@ -69,6 +69,9 @@
     <ClCompile Include="test_workers.cpp">
       <Filter>Models</Filter>
     </ClCompile>
+    <ClCompile Include="voucher_test.cpp">
+      <Filter>Voucher</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="workers.h">
