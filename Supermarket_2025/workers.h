@@ -60,11 +60,11 @@ public:
 	}
 	bool isApproved() const
 	{
-		return isApproved;
+		return isApprovedV;
 	}
 	bool isLoggedIn() const
 	{
-		return isLoggedIn;
+		return isLoggedInV;
 	}
 
 	void setApproved(bool approved)
@@ -186,8 +186,8 @@ public:
 
 	void generateSpecialCode();
 	bool validateSpecialCode(const char* code) const;
-	void saveSpecialCode() const;
-	bool loadSpecialCode();
+	void saveSpecialCodeToFile() const;
+	bool loadSpecialCodeFile();
 
 	bool approveCashier(Cashier* cashier, const char* providedCode);
 	bool warnCashier(Cashier* cashier, int points, const char* reason, const char* providedCode);;
@@ -207,8 +207,6 @@ private:
 	static char generateRandomDigit();
 	static char generateRandomLowercase();
 	static char generateRandomUppercase();
-	void saveSpecialCodeToFile() const;
-	bool loadSpecialCodeFile();
 };
 //class WorkerManager
 //{

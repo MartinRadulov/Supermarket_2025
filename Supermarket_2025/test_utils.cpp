@@ -193,23 +193,23 @@ void testRealWorldScenarios() {
     cout << endl;
 }
 
-int main()
-{
-	/*testCopy();
-
-	testStrEquals();
-
-	testTrimString();
-
-	testIsValidNumber();
-
-	testIsValidFloat();*/
-
-    testIsValidEmail();
-    testPasswordValidation();
-    testUsernameValidation();
-    testProductNameValidation();
-    testPriceValidation();
-    testRealWorldScenarios();
-
-}
+//int main()
+//{
+//	/*testCopy();
+//
+//	testStrEquals();
+//
+//	testTrimString();
+//
+//	testIsValidNumber();
+//
+//	testIsValidFloat();*/
+//
+//    testIsValidEmail();
+//    testPasswordValidation();
+//    testUsernameValidation();
+//    testProductNameValidation();
+//    testPriceValidation();
+//    testRealWorldScenarios();
+//
+//}

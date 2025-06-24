@@ -1,0 +1,27 @@
+2
+Cachier
+5001
+File
+Test
+123-456-7890
+26
+file123
+1
+0
+0
+1
+100
+100
+Test warning
+24/06/2025
+MANAGER
+5002
+Save
+Load
+987-654-3210
+38
+save456
+0
+0
+9WY324q
+1

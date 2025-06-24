@@ -66,6 +66,9 @@
     <ClCompile Include="test_utils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="test_workers.cpp">
+      <Filter>Models</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="workers.h">

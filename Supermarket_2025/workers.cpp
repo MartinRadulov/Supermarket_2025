@@ -74,7 +74,7 @@ void Worker::getFullName(char* fullName, int maxSize) const
 	strCopy(fullName, firstName, maxSize);
 
 	int i = 0;
-	while (fullName[i] !] '\0' && < maxSize - 1)
+	while (fullName[i] != '\0' && i < maxSize - 1)
 	{
 		i++;
 	}
@@ -302,7 +302,7 @@ bool Cashier::shouldBeFired() const
 void Cashier::resizeWarningArray()
 {
 	int newCapacity = (warningCapacity == 0) ? 2 : warningCapacity * 2;
-	Warning* newWarnings = new Warning[new_capacity];
+	Warning* newWarnings = new Warning[newCapacity];
 
 	for (int i = 0; i < warningCount; i++)
 	{
@@ -370,7 +370,7 @@ void Manager::displayInfo() const
 	std::cout << "Phone: " << phone << std::endl;
 	std::cout << "Age: " << age << std::endl;
 	std::cout << "Special Code: " << (codeIsValid ? specialCode : "INVALID") << std::endl;
-	std::cout << "Status: " << (isApproved ? "Approved" : "Pending") << std::endl;
+	std::cout << "Status: " << (isApprovedV ? "Approved" : "Pending") << std::endl;
 }
 
 bool Manager::hasSpecialPrivileges() const
@@ -418,7 +418,7 @@ bool Manager::validateSpecialCode(const char* code) const
 void Manager::saveSpecialCodeToFile() const
 {
 	char filename[100];
-	getSpecialCodeFilename(filename, sizeof(filename));
+	getSpecialCodeFile(filename, sizeof(filename));
 
 	std::ofstream file(filename);
 	if (file.is_open())
