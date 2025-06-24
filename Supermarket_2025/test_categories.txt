@@ -1,0 +1,3 @@
+CATEGORY:1:Fruits:Fresh fruits and vegetables
+CATEGORY:2:Dairy:Milk products and cheese
+CATEGORY:3:Bakery:Fresh bread and pastries

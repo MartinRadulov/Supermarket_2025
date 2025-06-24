@@ -131,6 +131,7 @@
     <ClCompile Include="auth.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="product_test.cpp" />
     <ClCompile Include="test_workers.cpp" />
     <ClCompile Include="voucher_test.cpp" />
     <ClCompile Include="worker_manager.cpp" />
