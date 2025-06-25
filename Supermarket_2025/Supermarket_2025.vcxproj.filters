@@ -78,6 +78,9 @@
     <ClCompile Include="trans_test.cpp">
       <Filter>Transaction</Filter>
     </ClCompile>
+    <ClCompile Include="main1.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="workers.h">

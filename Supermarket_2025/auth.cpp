@@ -1,16 +1,16 @@
 #include "auth.h"
 #include "workers.h"
-#include "worker_Manager.h"
+#include "worker_manager.h"
 #include <iostream>
 
 AuthSystem::AuthSystem()
-    : currentUser(nullptr), isLoggedInV(false), workerManager(nullptr) 
+    : currentUser(nullptr), isLoggedInV(false), workerManager(nullptr)
 {
 
 }
 
 AuthSystem::AuthSystem(WorkerManager* mgr)
-    : currentUser(nullptr), isLoggedInV(false), workerManager(mgr) 
+    : currentUser(nullptr), isLoggedInV(false), workerManager(mgr)
 {
 
 }
@@ -20,53 +20,63 @@ AuthSystem::~AuthSystem()
     clearCurrentUser();
 }
 
-bool AuthSystem::login(int worker_id, const char* password) {
-    if (!isValidWorkerId(worker_id) || !isValidPassword(password)) {
+bool AuthSystem::login(int worker_id, const char* password)
+{
+    if (!isValidWorkerId(worker_id) || !isValidPassword(password))
+    {
         std::cout << "Invalid login credentials format." << std::endl;
         return false;
     }
 
-    if (isLoggedInV) {
+    if (isLoggedInV)
+    {
         std::cout << "A user is already logged in. Please logout first." << std::endl;
         return false;
     }
 
-    if (!workerManager) {
+    if (!workerManager)
+    {
         std::cout << "Authentication system not properly initialized." << std::endl;
         return false;
     }
 
-    if (!workerManager->authenticateWorker(worker_id, password)) {
+    Worker* found_worker = workerManager->findWorkerById(worker_id);
+    if (!found_worker)
+    {
         std::cout << "Invalid login credentials." << std::endl;
         return false;
     }
 
-    Worker* worker = workerManager->findWorkerById(worker_id);
-    if (!worker) {
-        std::cout << "Worker not found in system." << std::endl;
+    if (!strCompare(found_worker->getPassword(), password))
+    {
+        std::cout << "Invalid login credentials." << std::endl;
         return false;
     }
 
-    if (strCompare(worker->getRole(), "Cashier")) {
-        Cashier* cashier = static_cast<Cashier*>(worker);
-        if (!cashier->isApproved()) {
+    Worker* authenticated_worker = found_worker;
+
+    if (strCompare(authenticated_worker->getRole(), "Cashier"))
+    {
+        Cashier* cashier = static_cast<Cashier*>(authenticated_worker);
+        if (!cashier->isApproved())
+        {
             std::cout << "Cashier registration is pending manager approval." << std::endl;
             return false;
         }
     }
 
-    currentUser = worker;
+    currentUser = authenticated_worker;
     isLoggedInV = true;
 
-    char name_buffer[100];
-    worker->getFullName(name_buffer, sizeof(name_buffer));
-    std::cout << "User " << name_buffer << " with ID: " << worker_id
+    char nameBuffer[100];
+    authenticated_worker->getFullName(nameBuffer, sizeof(nameBuffer));
+    std::cout << "User " << nameBuffer << " with ID: " << worker_id
         << " has been logged into the system!" << std::endl;
 
     return true;
 }
 
-void AuthSystem::logout()
+void AuthSystem::logout() 
 {
     if (!isLoggedInV || !currentUser)
     {
@@ -97,13 +107,15 @@ bool AuthSystem::isManager() const
 
 bool AuthSystem::isCashier() const
 {
-    if (!isLoggedIn()) {
+    if (!isLoggedIn())
+    {
         return false;
     }
     return strCompare(currentUser->getRole(), "Cashier");
 }
 
-bool AuthSystem::hasPendingApproval() const {
+bool AuthSystem::hasPendingApproval() const
+{
     if (!isCashier())
     {
         return false;
@@ -113,7 +125,7 @@ bool AuthSystem::hasPendingApproval() const {
     return !cashier->isApproved();
 }
 
-Worker* AuthSystem::getCurrentUser() const 
+Worker* AuthSystem::getCurrentUser() const
 {
     return currentUser;
 }
@@ -129,16 +141,17 @@ int AuthSystem::getCurrentUserId() const
 
 const char* AuthSystem::getCurrentUserRole() const
 {
-    if (!isLoggedIn()) 
+    if (!isLoggedIn())
     {
         return "Not logged in";
     }
     return currentUser->getRole();
 }
 
-void AuthSystem::displayCurrentUserInfo() const 
+void AuthSystem::displayCurrentUserInfo() const
 {
-    if (!isLoggedIn()) {
+    if (!isLoggedIn()) 
+    {
         std::cout << "No user is currently logged in." << std::endl;
         return;
     }
@@ -146,7 +159,7 @@ void AuthSystem::displayCurrentUserInfo() const
     currentUser->displayInfo();
 }
 
-bool AuthSystem::canExecuteManagerCommand() const 
+bool AuthSystem::canExecuteManagerCommand() const
 {
     return isManager();
 }
@@ -156,15 +169,16 @@ bool AuthSystem::canExecuteCashierCommand() const
     return isCashier() && !hasPendingApproval();
 }
 
-bool AuthSystem::canExecuteCommand(const char* command) const {
-    if (!isLoggedIn())
+bool AuthSystem::canExecuteCommand(const char* command) const
+{
+    if (!isLoggedIn()) 
     {
         return false;
     }
 
     for (int i = 0; i < AuthConstants::MANAGER_COMMAND_COUNT; i++)
     {
-        if (strCompare(command, AuthConstants::MANAGER_COMMANDS[i])) 
+        if (strCompare(command, AuthConstants::MANAGER_COMMANDS[i]))
         {
             return canExecuteManagerCommand();
         }
@@ -172,7 +186,7 @@ bool AuthSystem::canExecuteCommand(const char* command) const {
 
     for (int i = 0; i < AuthConstants::CASHIER_COMMAND_COUNT; i++)
     {
-        if (strCompare(command, AuthConstants::CASHIER_COMMANDS[i])) 
+        if (strCompare(command, AuthConstants::CASHIER_COMMANDS[i]))
         {
             return canExecuteCashierCommand();
         }
@@ -201,7 +215,6 @@ bool AuthSystem::validateManagerCode(const char* special_code) const
     return manager->validateSpecialCode(special_code);
 }
 
-// Integration Functions
 void AuthSystem::setWorkerManager(WorkerManager* mgr)
 {
     workerManager = mgr;
@@ -212,8 +225,7 @@ WorkerManager* AuthSystem::getWorkerManager() const
     return workerManager;
 }
 
-// Utility Functions
-void AuthSystem::displayLoginPrompt() const
+void AuthSystem::displayLoginPrompt() const 
 {
     std::cout << std::endl;
     std::cout << "=== FMI Supermarket Management System ===" << std::endl;
@@ -226,7 +238,7 @@ void AuthSystem::displayAccessDeniedMessage(const char* command) const
 {
     std::cout << "Access denied. ";
 
-    if (!isLoggedIn()) 
+    if (!isLoggedIn())
     {
         std::cout << "Please login first." << std::endl;
         return;
@@ -240,14 +252,14 @@ void AuthSystem::displayAccessDeniedMessage(const char* command) const
 
     for (int i = 0; i < AuthConstants::MANAGER_COMMAND_COUNT; i++)
     {
-        if (strCompare(command, AuthConstants::MANAGER_COMMANDS[i]))
+        if (strCompare(command, AuthConstants::MANAGER_COMMANDS[i])) 
         {
             std::cout << "Manager privileges required for command: " << command << std::endl;
             return;
         }
     }
 
-    for (int i = 0; i < AuthConstants::CASHIER_COMMAND_COUNT; i++)
+    for (int i = 0; i < AuthConstants::CASHIER_COMMAND_COUNT; i++) 
     {
         if (strCompare(command, AuthConstants::CASHIER_COMMANDS[i]))
         {
@@ -276,7 +288,8 @@ bool AuthSystem::isValidWorkerId(int id) const
     return id >= AuthConstants::MIN_WORKER_ID && id <= AuthConstants::MAX_WORKER_ID;
 }
 
-bool AuthSystem::isValidPassword(const char* password) const {
+bool AuthSystem::isValidPassword(const char* password) const 
+{
     if (!password)
     {
         return false;

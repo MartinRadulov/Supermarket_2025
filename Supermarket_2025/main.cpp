@@ -13,40 +13,45 @@
 class CLISystem {
 private:
     AuthSystem auth;
-    WorkerManager worker_mgr;
-    ProductManager product_mgr;
-    TransactionManager transaction_mgr;
-    GiftCardFactory voucher_factory;
+    WorkerManager workerMgr;
+    ProductManager productMgr;
+    TransactionManager transactionMgr;
+    GiftCardFactory voucherFactory;
 
-    bool system_running;
-    char input_buffer[1000];
-    char command_buffer[100];
-    char args_buffer[900];
+    bool systemRunning;
+    char inputBuffer[1000];
+    char commandBuffer[100];
+    char argsBuffer[900];
 
 public:
-    CLISystem() : system_running(true) {
-        auth.setWorkerManager(&worker_mgr);
-        transaction_mgr.setProductManager(&product_mgr);
+    CLISystem() : systemRunning(true)
+    {
+        // Initialize random seed FIRST for unique code generation
+        srand(static_cast<unsigned int>(time(nullptr)));
+
+        auth.setWorkerManager(&workerMgr);
+        transactionMgr.setProductManager(&productMgr);
 
         loadSystemData();
-
         createDefaultManagerIfNeeded();
-
-        srand(static_cast<unsigned int>(time(nullptr)));
     }
 
-    ~CLISystem() {
+    ~CLISystem()
+    {
         saveSystemData();
     }
 
-    void run() {
+    void run()
+    {
         displayWelcomeMessage();
 
-        while (system_running) {
+        while (systemRunning)
+        {
             displayPrompt();
             readInput();
 
-            if (parseCommand()) {
+            if (parseCommand())
+            {
                 executeCommand();
             }
         }
@@ -55,67 +60,83 @@ public:
     }
 
 private:
-    void loadSystemData() {
+    void loadSystemData()
+    {
         std::cout << "Loading system data..." << std::endl;
 
-        std::ifstream worker_file("workers.txt");
-        if (worker_file.is_open()) {
-            worker_mgr.loadAllWorkers("workers.txt");
-            worker_file.close();
+        // WORKER LOADING DISABLED - format incompatibility issues
+        // std::ifstream workerFile("workers.txt");
+        // if (workerFile.is_open()) 
+        // {
+        //     workerMgr.loadAllWorkers("workers.txt");
+        //     workerFile.close();
+        // }
+
+        std::ifstream categoryFile("categories.txt");
+        if (categoryFile.is_open())
+        {
+            productMgr.loadAllCategories("categories.txt");
+            categoryFile.close();
         }
 
-        std::ifstream category_file("categories.txt");
-        if (category_file.is_open()) {
-            product_mgr.loadAllCategories("categories.txt");
-            category_file.close();
+        std::ifstream productFile("products.txt");
+        if (productFile.is_open())
+        {
+            productMgr.loadAllProducts("products.txt");
+            productFile.close();
         }
 
-        std::ifstream product_file("products.txt");
-        if (product_file.is_open()) {
-            product_mgr.loadAllProducts("products.txt");
-            product_file.close();
-        }
-
-        std::ifstream trans_file("transactions.txt");
-        if (trans_file.is_open()) {
-            transaction_mgr.loadAllTransactions("transactions.txt");
-            trans_file.close();
+        std::ifstream transactionFile("transactions.txt");
+        if (transactionFile.is_open())
+        {
+            transactionMgr.loadAllTransactions("transactions.txt");
+            transactionFile.close();
         }
 
         std::cout << "System data loaded successfully." << std::endl;
     }
 
-    void saveSystemData() {
+    void saveSystemData()
+    {
         std::cout << "Saving system data..." << std::endl;
 
-        worker_mgr.saveAllWorkers("workers.txt");
+        // TEMPORARILY DISABLED - file format issues
+        // workerMgr.saveAllWorkers("workers.txt");
 
-        product_mgr.saveAllCategories("categories.txt");
-        product_mgr.saveAllProducts("products.txt");
-
-        transaction_mgr.saveAllTransactions("transactions.txt");
+        productMgr.saveAllCategories("categories.txt");
+        productMgr.saveAllProducts("products.txt");
+        transactionMgr.saveAllTransactions("transactions.txt");
 
         std::cout << "System data saved successfully." << std::endl;
     }
 
-    void createDefaultManagerIfNeeded() {
-        if (worker_mgr.getWorkerCount() == 0) {
+    void createDefaultManagerIfNeeded()
+    {
+        if (workerMgr.getWorkerCount() == 0)
+        {
             std::cout << "Creating default manager account..." << std::endl;
 
-            Manager* default_mgr = new Manager(Worker::generateNewId(), "Admin", "Manager",
+            Manager* defaultMgr = new Manager(Worker::generateNewId(), "Admin", "Manager",
                 "0881234567", 30, "admin123");
-            default_mgr->setApproved(true);
+            defaultMgr->setApproved(true);
 
-            if (worker_mgr.addWorker(default_mgr)) {
-                default_mgr->generateSpecialCode();
-                std::cout << "Default manager created with ID: " << default_mgr->getId()
+            if (workerMgr.addWorker(defaultMgr))
+            {
+                defaultMgr->generateSpecialCode();
+                std::cout << "Default manager created with ID: " << defaultMgr->getId()
                     << ", Password: admin123" << std::endl;
-                std::cout << "Special code: " << default_mgr->getSpecialCode() << std::endl;
+                std::cout << "Special code: " << defaultMgr->getSpecialCode() << std::endl;
+            }
+            else
+            {
+                std::cout << "Failed to add default manager!" << std::endl;
+                delete defaultMgr;
             }
         }
     }
 
-    void displayWelcomeMessage() {
+    void displayWelcomeMessage()
+    {
         std::cout << std::endl;
         std::cout << "=================================================" << std::endl;
         std::cout << "  Welcome to FMI Supermarket Management System  " << std::endl;
@@ -123,7 +144,8 @@ private:
         std::cout << "=================================================" << std::endl;
         std::cout << std::endl;
 
-        if (!auth.isLoggedIn()) {
+        if (!auth.isLoggedIn())
+        {
             std::cout << "Please login to continue." << std::endl;
             std::cout << "Available commands:" << std::endl;
             std::cout << "  login <id> <password>" << std::endl;
@@ -132,325 +154,443 @@ private:
         }
     }
 
-    void displayPrompt() {
-        if (auth.isLoggedIn()) {
+    void displayPrompt()
+    {
+        if (auth.isLoggedIn())
+        {
             std::cout << "[" << auth.getCurrentUserRole() << " "
                 << auth.getCurrentUserId() << "] > ";
         }
-        else {
+        else
+        {
             std::cout << "> ";
         }
     }
 
-    void displayGoodbyeMessage() {
+    void displayGoodbyeMessage()
+    {
         std::cout << std::endl;
         std::cout << "Thank you for using FMI Supermarket Management System!" << std::endl;
         std::cout << "Goodbye!" << std::endl;
     }
 
-    void readInput() {
-        std::cin.getline(input_buffer, sizeof(input_buffer));
-        trimStr(input_buffer);
+    void readInput()
+    {
+        std::cin.getline(inputBuffer, sizeof(inputBuffer));
+        trimStr(inputBuffer);
     }
 
-    bool parseCommand() {
-        if (getStrLength(input_buffer) == 0) {
+    bool parseCommand()
+    {
+        if (getStrLength(inputBuffer) == 0)
+        {
             return false;
         }
 
-        int space_pos = -1;
-        for (int i = 0; input_buffer[i] != '\0'; i++) {
-            if (isWhitespace(input_buffer[i])) {
-                space_pos = i;
+        int spacePos = -1;
+        for (int i = 0; inputBuffer[i] != '\0'; i++)
+        {
+            if (isWhitespace(inputBuffer[i]))
+            {
+                spacePos = i;
                 break;
             }
         }
 
-        if (space_pos == -1) {
-            strCopy(command_buffer, input_buffer, sizeof(command_buffer));
-            args_buffer[0] = '\0';
+        if (spacePos == -1)
+        {
+            strCopy(commandBuffer, inputBuffer, sizeof(commandBuffer));
+            argsBuffer[0] = '\0';
         }
-        else {
-            int cmd_len = (space_pos < sizeof(command_buffer) - 1) ? space_pos : sizeof(command_buffer) - 1;
-            for (int i = 0; i < cmd_len; i++) {
-                command_buffer[i] = input_buffer[i];
+        else
+        {
+            int cmdLen = (spacePos < sizeof(commandBuffer) - 1) ? spacePos : sizeof(commandBuffer) - 1;
+            for (int i = 0; i < cmdLen; i++)
+            {
+                commandBuffer[i] = inputBuffer[i];
             }
-            command_buffer[cmd_len] = '\0';
+            commandBuffer[cmdLen] = '\0';
 
-            int arg_start = space_pos;
-            while (input_buffer[arg_start] != '\0' && isWhitespace(input_buffer[arg_start])) {
-                arg_start++;
+            int argStart = spacePos;
+            while (inputBuffer[argStart] != '\0' && isWhitespace(inputBuffer[argStart]))
+            {
+                argStart++;
             }
-            strCopy(args_buffer, &input_buffer[arg_start], sizeof(args_buffer));
+            strCopy(argsBuffer, &inputBuffer[argStart], sizeof(argsBuffer));
         }
 
         return true;
     }
 
-    void executeCommand() {
-        for (int i = 0; command_buffer[i] != '\0'; i++) {
-            command_buffer[i] = toLowerCase(command_buffer[i]);
+    void executeCommand()
+    {
+        for (int i = 0; commandBuffer[i] != '\0'; i++)
+        {
+            commandBuffer[i] = toLowerCase(commandBuffer[i]);
         }
 
-        if (strCompare(command_buffer, "exit") || strCompare(command_buffer, "quit")) {
-            system_running = false;
+        if (strCompare(commandBuffer, "exit") || strCompare(commandBuffer, "quit"))
+        {
+            systemRunning = false;
             return;
         }
 
-        if (strCompare(command_buffer, "login")) {
+        if (strCompare(commandBuffer, "login"))
+        {
             executeLogin();
             return;
         }
 
-        if (strCompare(command_buffer, "register")) {
+        if (strCompare(commandBuffer, "register"))
+        {
             executeRegister();
             return;
         }
 
-        if (!auth.isLoggedIn()) {
+        if (!auth.isLoggedIn())
+        {
             auth.displayNotLoggedInMessage();
             return;
         }
 
-        if (!auth.canExecuteCommand(command_buffer)) {
-            auth.displayAccessDeniedMessage(command_buffer);
+        if (!auth.canExecuteCommand(commandBuffer))
+        {
+            auth.displayAccessDeniedMessage(commandBuffer);
             return;
         }
 
-        if (strCompare(command_buffer, "logout")) {
+        if (strCompare(commandBuffer, "logout"))
+        {
             auth.logout();
         }
-        else if (strCompare(command_buffer, "list-user-data")) {
+        else if (strCompare(commandBuffer, "list-user-data"))
+        {
             auth.displayCurrentUserInfo();
         }
-        else if (strCompare(command_buffer, "list-workers")) {
-            worker_mgr.listAllWorkers();
+        else if (strCompare(commandBuffer, "list-workers"))
+        {
+            workerMgr.listAllWorkers();
         }
-        else if (strCompare(command_buffer, "list-products")) {
+        else if (strCompare(commandBuffer, "list-products"))
+        {
             executeListProducts();
         }
-        else if (strCompare(command_buffer, "list-transactions")) {
-            transaction_mgr.listAllTransactions();
+        else if (strCompare(commandBuffer, "list-transactions"))
+        {
+            transactionMgr.listAllTransactions();
         }
-        else if (strCompare(command_buffer, "sell")) {
+        else if (strCompare(commandBuffer, "sell"))
+        {
             executeSell();
         }
-        else if (strCompare(command_buffer, "list-pending")) {
-            worker_mgr.listPendingWorkers();
+        else if (strCompare(commandBuffer, "list-pending"))
+        {
+            workerMgr.listPendingWorkers();
         }
-        else if (strCompare(command_buffer, "approve")) {
+        else if (strCompare(commandBuffer, "approve"))
+        {
             executeApprove();
         }
-        else if (strCompare(command_buffer, "decline")) {
+        else if (strCompare(commandBuffer, "decline"))
+        {
             executeDecline();
         }
-        else if (strCompare(command_buffer, "warn-cashier")) {
+        else if (strCompare(commandBuffer, "warn-cashier"))
+        {
             executeWarnCashier();
         }
-        else if (strCompare(command_buffer, "promote-cashier")) {
+        else if (strCompare(commandBuffer, "promote-cashier"))
+        {
             executePromoteCashier();
         }
-        else if (strCompare(command_buffer, "fire-cashier")) {
+        else if (strCompare(commandBuffer, "fire-cashier"))
+        {
             executeFireCashier();
         }
-        else if (strCompare(command_buffer, "add-category")) {
+        else if (strCompare(commandBuffer, "add-category"))
+        {
             executeAddCategory();
         }
-        else if (strCompare(command_buffer, "delete-category")) {
+        else if (strCompare(commandBuffer, "delete-category"))
+        {
             executeDeleteCategory();
         }
-        else if (strCompare(command_buffer, "add-product")) {
+        else if (strCompare(commandBuffer, "add-product"))
+        {
             executeAddProduct();
         }
-        else if (strCompare(command_buffer, "delete-product")) {
+        else if (strCompare(commandBuffer, "delete-product"))
+        {
             executeDeleteProduct();
         }
-        else if (strCompare(command_buffer, "load-products")) {
+        else if (strCompare(commandBuffer, "load-products"))
+        {
             executeLoadProducts();
         }
-        else if (strCompare(command_buffer, "load-gift-cards")) {
+        else if (strCompare(commandBuffer, "load-gift-cards"))
+        {
             executeLoadGiftCards();
         }
-        else {
-            std::cout << "Unknown command: " << command_buffer << std::endl;
+        else
+        {
+            std::cout << "Unknown command: " << commandBuffer << std::endl;
             std::cout << "Type 'help' for available commands." << std::endl;
         }
     }
 
-    void executeLogin() {
-        char id_str[20], password[100];
-        if (!parseLoginArgs(args_buffer, id_str, password)) {
+    void executeLogin()
+    {
+        char idStr[20], password[100];
+        if (!parseLoginArgs(argsBuffer, idStr, password))
+        {
             std::cout << "Usage: login <worker_id> <password>" << std::endl;
             return;
         }
 
-        if (!isValidNumber(id_str)) {
+        if (!isValidNumber(idStr))
+        {
             std::cout << "Invalid worker ID format." << std::endl;
             return;
         }
 
-        int worker_id = 0;
-        for (int i = 0; id_str[i] != '\0'; i++) {
-            worker_id = worker_id * 10 + (id_str[i] - '0');
+        int workerId = 0;
+        for (int i = 0; idStr[i] != '\0'; i++)
+        {
+            workerId = workerId * 10 + (idStr[i] - '0');
         }
 
-        auth.login(worker_id, password);
+        auth.login(workerId, password);
     }
 
-    void executeRegister() {
-        char role[20], first_name[50], last_name[50], phone[20], age_str[10], password[100];
+    void executeRegister()
+    {
+        char role[20], firstName[50], lastName[50], phone[20], ageStr[10], password[100];
 
-        if (!parseRegisterArgs(args_buffer, role, first_name, last_name, phone, age_str, password)) {
+        if (!parseRegisterArgs(argsBuffer, role, firstName, lastName, phone, ageStr, password))
+        {
             std::cout << "Usage: register <role> <first_name> <last_name> <phone> <age> <password>" << std::endl;
             std::cout << "Roles: cashier, manager" << std::endl;
             return;
         }
 
-        if (!isValidNumber(age_str)) {
+        if (!isValidNumber(ageStr))
+        {
             std::cout << "Invalid age format." << std::endl;
             return;
         }
 
         int age = 0;
-        for (int i = 0; age_str[i] != '\0'; i++) {
-            age = age * 10 + (age_str[i] - '0');
+        for (int i = 0; ageStr[i] != '\0'; i++)
+        {
+            age = age * 10 + (ageStr[i] - '0');
         }
 
-        if (age < 18 || age > 100) {
+        if (age < 18 || age > 100)
+        {
             std::cout << "Age must be between 18 and 100." << std::endl;
             return;
         }
 
-        Worker* new_worker = nullptr;
-        int new_id = Worker::generateNewId();
+        Worker* newWorker = nullptr;
+        int newId = Worker::generateNewId();
 
-        if (strCompare(role, "cashier")) {
-            new_worker = new Cashier(new_id, first_name, last_name, phone, age, password);
+        if (strCompare(role, "cashier"))
+        {
+            newWorker = new Cashier(newId, firstName, lastName, phone, age, password);
         }
-        else if (strCompare(role, "manager")) {
-            Manager* new_mgr = new Manager(new_id, first_name, last_name, phone, age, password);
-            new_mgr->generateSpecialCode();
-            new_mgr->setApproved(true);
-            new_worker = new_mgr;
+        else if (strCompare(role, "manager"))
+        {
+            Manager* newMgr = new Manager(newId, firstName, lastName, phone, age, password);
+            newMgr->generateSpecialCode();
+            newMgr->setApproved(true);
+            newWorker = newMgr;
         }
-        else {
+        else
+        {
             std::cout << "Invalid role. Use 'cashier' or 'manager'." << std::endl;
             return;
         }
 
-        if (worker_mgr.addWorker(new_worker)) {
-            if (strCompare(role, "cashier")) {
-                std::cout << "Cashier registration pending approval from a manager." << std::endl;
+        if (workerMgr.addWorker(newWorker))
+        {
+            if (strCompare(role, "cashier"))
+            {
+                std::cout << "Cashier registered successfully with ID: " << newWorker->getId() << std::endl;
+                std::cout << "Registration pending approval from a manager." << std::endl;
+                std::cout << "You can login after manager approval using: login " << newWorker->getId() << " " << password << std::endl;
             }
-            else {
-                std::cout << "Manager registered successfully!" << std::endl;
-                Manager* mgr = static_cast<Manager*>(new_worker);
+            else
+            {
+                std::cout << "Manager registered successfully with ID: " << newWorker->getId() << std::endl;
+                Manager* mgr = static_cast<Manager*>(newWorker);
                 std::cout << "Special code: " << mgr->getSpecialCode() << std::endl;
+                std::cout << "You can login immediately using: login " << newWorker->getId() << " " << password << std::endl;
                 char filename[50];
-                intToString(new_worker->getId(), filename, 20);
+                intToString(newWorker->getId(), filename, 20);
                 int len = getStrLength(filename);
                 const char* suffix = "_special_code.txt";
-                for (int i = 0; suffix[i] != '\0' && len + i < 49; i++) {
+                for (int i = 0; suffix[i] != '\0' && len + i < 49; i++)
+                {
                     filename[len + i] = suffix[i];
                 }
                 filename[len + getStrLength(suffix)] = '\0';
                 std::cout << "Code saved to: " << filename << std::endl;
             }
         }
-        else {
+        else
+        {
             std::cout << "Failed to register worker." << std::endl;
-            delete new_worker;
+            delete newWorker;
         }
     }
 
-    void executeListProducts() {
-        if (getStrLength(args_buffer) == 0) {
-            product_mgr.listAllProducts();
+    bool parseRegisterArgs(const char* args, char* role, char* firstName, char* lastName,
+        char* phone, char* ageStr, char* password)
+    {
+        char temp[900];
+        strCopy(temp, args, sizeof(temp));
+
+        char* parts[6];
+        int partCount = 0;
+        int start = 0;
+        int len = getStrLength(temp);
+
+        for (int i = 0; i <= len && partCount < 6; i++) {
+            if (temp[i] == ' ' || temp[i] == '\0') {
+                if (i > start) {
+                    temp[i] = '\0';
+                    parts[partCount] = &temp[start];
+                    partCount++;
+                }
+
+                while (i + 1 <= len && temp[i + 1] == ' ') {
+                    i++;
+                }
+                start = i + 1;
+            }
         }
-        else {
-            if (!isValidNumber(args_buffer)) {
+
+        if (partCount != 6) {
+            return false;
+        }
+
+        strCopy(role, parts[0], 20);
+        strCopy(firstName, parts[1], 50);
+        strCopy(lastName, parts[2], 50);
+        strCopy(phone, parts[3], 20);
+        strCopy(ageStr, parts[4], 10);
+        strCopy(password, parts[5], 100);
+
+        return true;
+    }
+
+    void executeListProducts()
+    {
+        if (getStrLength(argsBuffer) == 0)
+        {
+            productMgr.listAllProducts();
+        }
+        else
+        {
+            if (!isValidNumber(argsBuffer))
+            {
                 std::cout << "Invalid category ID format." << std::endl;
                 return;
             }
 
-            int category_id = 0;
-            for (int i = 0; args_buffer[i] != '\0'; i++) {
-                category_id = category_id * 10 + (args_buffer[i] - '0');
+            int categoryId = 0;
+            for (int i = 0; argsBuffer[i] != '\0'; i++)
+            {
+                categoryId = categoryId * 10 + (argsBuffer[i] - '0');
             }
 
-            product_mgr.listProductsByCategory(category_id);
+            productMgr.listProductsByCategory(categoryId);
         }
     }
 
-    void executeAddCategory() {
+    void executeAddCategory()
+    {
         char name[100], description[300];
-        if (!parseCategoryArgs(args_buffer, name, description)) {
-            std::cout << "Usage: add-category <name> <description>" << std::endl;
+        if (!parseCategoryArgs(argsBuffer, name, description))
+        {
+            std::cout << "Usage: add-category <n> <description>" << std::endl;
             return;
         }
 
         Category* newCategory = new Category(Category::generateNewCategoryId(), name, description);
-        if (product_mgr.addCategory(newCategory)) {
+        if (productMgr.addCategory(newCategory))
+        {
             std::cout << "Category \"" << name << "\" added successfully!" << std::endl;
         }
-        else {
+        else
+        {
             std::cout << "Failed to add category. Category may already exist." << std::endl;
             delete newCategory;
         }
     }
 
-    void executeDeleteCategory() {
-        if (!isValidNumber(args_buffer)) {
+    void executeDeleteCategory()
+    {
+        if (!isValidNumber(argsBuffer))
+        {
             std::cout << "Usage: delete-category <category_id>" << std::endl;
             return;
         }
 
-        int category_id = 0;
-        for (int i = 0; args_buffer[i] != '\0'; i++) {
-            category_id = category_id * 10 + (args_buffer[i] - '0');
+        int categoryId = 0;
+        for (int i = 0; argsBuffer[i] != '\0'; i++)
+        {
+            categoryId = categoryId * 10 + (argsBuffer[i] - '0');
         }
 
-        if (product_mgr.removeCategoryById(category_id)) {
+        if (productMgr.removeCategoryById(categoryId))
+        {
             std::cout << "Category deleted successfully!" << std::endl;
         }
-        else {
+        else
+        {
             std::cout << "Failed to delete category. Category may have products or not exist." << std::endl;
         }
     }
 
-    void executeAddProduct() {
-        if (getStrLength(args_buffer) == 0) {
+    void executeAddProduct()
+    {
+        if (getStrLength(argsBuffer) == 0)
+        {
             std::cout << "Usage: add-product <product_type>" << std::endl;
             std::cout << "Product types: product_by_unit, product_by_weight" << std::endl;
             return;
         }
 
-        char product_name[100], category_name[100];
-        char price_str[20], quantity_str[20];
+        char productName[100], categoryName[100];
+        char priceStr[20], quantityStr[20];
 
         std::cout << "Enter product name: ";
-        std::cin.getline(product_name, sizeof(product_name));
+        std::cin.getline(productName, sizeof(productName));
 
         std::cout << "Enter product category: ";
-        std::cin.getline(category_name, sizeof(category_name));
+        std::cin.getline(categoryName, sizeof(categoryName));
 
-        std::cout << "Enter price per " << (strCompare(args_buffer, "product_by_unit") ? "unit" : "kg") << ": ";
-        std::cin.getline(price_str, sizeof(price_str));
+        std::cout << "Enter price per " << (strCompare(argsBuffer, "product_by_unit") ? "unit" : "kg") << ": ";
+        std::cin.getline(priceStr, sizeof(priceStr));
 
-        std::cout << "Enter quantity (" << (strCompare(args_buffer, "product_by_unit") ? "units" : "kg") << "): ";
-        std::cin.getline(quantity_str, sizeof(quantity_str));
+        std::cout << "Enter quantity (" << (strCompare(argsBuffer, "product_by_unit") ? "units" : "kg") << "): ";
+        std::cin.getline(quantityStr, sizeof(quantityStr));
 
-        if (!isValidProductName(product_name) || !isValidPrice(price_str) || !isValidFloat(quantity_str)) {
+        if (!isValidProductName(productName) || !isValidPrice(priceStr) || !isValidFloat(quantityStr))
+        {
             std::cout << "Invalid input format." << std::endl;
             return;
         }
 
-        Category* category = product_mgr.findCategoryByName(category_name);
-        if (!category) {
+        Category* category = productMgr.findCategoryByName(categoryName);
+        if (!category)
+        {
             std::cout << "Category not found. Creating new category..." << std::endl;
-            int new_cat_id = Category::generateNewCategoryId();
-            category = new Category(new_cat_id, category_name, "Auto-created category");
-            if (!product_mgr.addCategory(category)) {
+            int newCatId = Category::generateNewCategoryId();
+            category = new Category(newCatId, categoryName, "Auto-created category");
+            if (!productMgr.addCategory(category))
+            {
                 std::cout << "Failed to create category." << std::endl;
                 delete category;
                 return;
@@ -458,196 +598,233 @@ private:
         }
 
         double price = 0.0, quantity = 0.0;
-        for (int i = 0; price_str[i] != '\0'; i++) {
-            if (price_str[i] == '.') {
+        for (int i = 0; priceStr[i] != '\0'; i++)
+        {
+            if (priceStr[i] == '.')
+            {
                 double decimal = 0.1;
-                for (int j = i + 1; price_str[j] != '\0'; j++) {
-                    price += (price_str[j] - '0') * decimal;
+                for (int j = i + 1; priceStr[j] != '\0'; j++)
+                {
+                    price += (priceStr[j] - '0') * decimal;
                     decimal *= 0.1;
                 }
                 break;
             }
-            price = price * 10 + (price_str[i] - '0');
+            price = price * 10 + (priceStr[i] - '0');
         }
 
-        for (int i = 0; quantity_str[i] != '\0'; i++) {
-            if (quantity_str[i] == '.') {
+        for (int i = 0; quantityStr[i] != '\0'; i++)
+        {
+            if (quantityStr[i] == '.')
+            {
                 double decimal = 0.1;
-                for (int j = i + 1; quantity_str[j] != '\0'; j++) {
-                    quantity += (quantity_str[j] - '0') * decimal;
+                for (int j = i + 1; quantityStr[j] != '\0'; j++)
+                {
+                    quantity += (quantityStr[j] - '0') * decimal;
                     decimal *= 0.1;
                 }
                 break;
             }
-            quantity = quantity * 10 + (quantity_str[i] - '0');
+            quantity = quantity * 10 + (quantityStr[i] - '0');
         }
 
-        Product* new_product = nullptr;
-        int new_product_id = Product::generateNewProductId();
+        Product* newProduct = nullptr;
+        int newProductId = Product::generateNewProductId();
 
-        if (strCompare(args_buffer, "product_by_unit")) {
-            new_product = new ProductByUnit(new_product_id, product_name, category->getId(), price, (int)quantity);
+        if (strCompare(argsBuffer, "product_by_unit"))
+        {
+            newProduct = new ProductByUnit(newProductId, productName, category->getId(), price, (int)quantity);
         }
-        else if (strCompare(args_buffer, "product_by_weight")) {
-            new_product = new ProductByWeight(new_product_id, product_name, category->getId(), price, quantity);
+        else if (strCompare(argsBuffer, "product_by_weight"))
+        {
+            newProduct = new ProductByWeight(newProductId, productName, category->getId(), price, quantity);
         }
-        else {
+        else
+        {
             std::cout << "Invalid product type. Use 'product_by_unit' or 'product_by_weight'." << std::endl;
             return;
         }
 
-        if (product_mgr.addProduct(new_product)) {
-            std::cout << "Product \"" << product_name << "\" added successfully under category \"" << category_name << "\"" << std::endl;
+        if (productMgr.addProduct(newProduct))
+        {
+            std::cout << "Product \"" << productName << "\" added successfully under category \"" << categoryName << "\"" << std::endl;
         }
-        else {
+        else
+        {
             std::cout << "Failed to add product." << std::endl;
-            delete new_product;
+            delete newProduct;
         }
     }
 
-    void executeDeleteProduct() {
-        if (!isValidNumber(args_buffer)) {
+    void executeDeleteProduct()
+    {
+        if (!isValidNumber(argsBuffer))
+        {
             std::cout << "Usage: delete-product <product_id>" << std::endl;
             return;
         }
 
-        int product_id = 0;
-        for (int i = 0; args_buffer[i] != '\0'; i++) {
-            product_id = product_id * 10 + (args_buffer[i] - '0');
+        int productId = 0;
+        for (int i = 0; argsBuffer[i] != '\0'; i++) {
+            productId = productId * 10 + (argsBuffer[i] - '0');
         }
 
-        if (product_mgr.removeProductById(product_id)) {
+        if (productMgr.removeProductById(productId))
+        {
             std::cout << "Product deleted successfully!" << std::endl;
         }
-        else {
+        else
+        {
             std::cout << "Failed to delete product. Product may not exist." << std::endl;
         }
     }
 
-    void executeLoadProducts() {
-        if (getStrLength(args_buffer) == 0) {
+    void executeLoadProducts()
+    {
+        if (getStrLength(argsBuffer) == 0)
+        {
             std::cout << "Usage: load-products <filename>" << std::endl;
             return;
         }
 
-        if (product_mgr.loadProductsFromReceipt(args_buffer)) {
-            std::cout << "Products loaded successfully from " << args_buffer << std::endl;
-        }
-        else {
-            std::cout << "Failed to load products from " << args_buffer << std::endl;
-        }
+        productMgr.loadProductsFromReceipt(argsBuffer);
     }
 
-    void executeLoadGiftCards() {
-        if (getStrLength(args_buffer) == 0) {
+    void executeLoadGiftCards()
+    {
+        if (getStrLength(argsBuffer) == 0)
+        {
             std::cout << "Usage: load-gift-cards <filename>" << std::endl;
             return;
         }
 
-        std::cout << "Loading gift cards from " << args_buffer << "..." << std::endl;
+        std::cout << "Loading gift cards from " << argsBuffer << "..." << std::endl;
         std::cout << "Gift card system ready for transactions." << std::endl;
     }
 
-    void executeApprove() {
-        char cashier_id_str[20], special_code[10];
-        if (!parseIdCodeArgs(args_buffer, cashier_id_str, special_code)) {
+    void executeApprove()
+    {
+        char cashierIdStr[20], specialCode[10];
+        if (!parseIdCodeArgs(argsBuffer, cashierIdStr, specialCode))
+        {
             std::cout << "Usage: approve <cashier_id> <special_code>" << std::endl;
             return;
         }
 
-        if (!isValidNumber(cashier_id_str)) {
+        if (!isValidNumber(cashierIdStr))
+        {
             std::cout << "Invalid cashier ID format." << std::endl;
             return;
         }
 
-        if (!auth.validateManagerCode(special_code)) {
+        if (!auth.validateManagerCode(specialCode))
+        {
             std::cout << "Invalid special code." << std::endl;
             return;
         }
 
-        int cashier_id = 0;
-        for (int i = 0; cashier_id_str[i] != '\0'; i++) {
-            cashier_id = cashier_id * 10 + (cashier_id_str[i] - '0');
+        int cashierId = 0;
+        for (int i = 0; cashierIdStr[i] != '\0'; i++)
+        {
+            cashierId = cashierId * 10 + (cashierIdStr[i] - '0');
         }
 
-        if (worker_mgr.approveWorker(cashier_id, auth.getCurrentUserId(), special_code)) {
+        if (workerMgr.approveWorker(cashierId, auth.getCurrentUserId(), specialCode))
+        {
             std::cout << "Cashier approved successfully!" << std::endl;
         }
-        else {
+        else
+        {
             std::cout << "Failed to approve cashier. Cashier may not exist or already be approved." << std::endl;
         }
     }
 
-    void executeDecline() {
-        char cashier_id_str[20], special_code[10];
-        if (!parseIdCodeArgs(args_buffer, cashier_id_str, special_code)) {
+    void executeDecline()
+    {
+        char cashierIdStr[20], specialCode[10];
+        if (!parseIdCodeArgs(argsBuffer, cashierIdStr, specialCode))
+        {
             std::cout << "Usage: decline <cashier_id> <special_code>" << std::endl;
             return;
         }
 
-        if (!isValidNumber(cashier_id_str)) {
+        if (!isValidNumber(cashierIdStr))
+        {
             std::cout << "Invalid cashier ID format." << std::endl;
             return;
         }
 
-        if (!auth.validateManagerCode(special_code)) {
+        if (!auth.validateManagerCode(specialCode))
+        {
             std::cout << "Invalid special code." << std::endl;
             return;
         }
 
-        int cashier_id = 0;
-        for (int i = 0; cashier_id_str[i] != '\0'; i++) {
-            cashier_id = cashier_id * 10 + (cashier_id_str[i] - '0');
+        int cashierId = 0;
+        for (int i = 0; cashierIdStr[i] != '\0'; i++)
+        {
+            cashierId = cashierId * 10 + (cashierIdStr[i] - '0');
         }
 
-        Worker* worker = worker_mgr.findWorkerById(cashier_id);
-        if (!worker || !strCompare(worker->getRole(), "Cashier")) {
+        Worker* worker = workerMgr.findWorkerById(cashierId);
+        if (!worker || !strCompare(worker->getRole(), "Cashier"))
+        {
             std::cout << "Pending cashier not found." << std::endl;
             return;
         }
 
         Cashier* cashier = static_cast<Cashier*>(worker);
-        if (cashier->isApproved()) {
+        if (cashier->isApproved())
+        {
             std::cout << "Cashier is already approved." << std::endl;
             return;
         }
 
-        if (worker_mgr.removeWorker(cashier_id)) {
+        if (workerMgr.removeWorker(cashierId))
+        {
             std::cout << "Cashier registration declined and removed." << std::endl;
         }
-        else {
+        else
+        {
             std::cout << "Failed to decline cashier registration." << std::endl;
         }
     }
 
-    void executeWarnCashier() {
-        char cashier_id_str[20], points_str[10];
-        if (!parseIdPointsArgs(args_buffer, cashier_id_str, points_str)) {
+    void executeWarnCashier()
+    {
+        char cashierIdStr[20], pointsStr[10];
+        if (!parseIdPointsArgs(argsBuffer, cashierIdStr, pointsStr))
+        {
             std::cout << "Usage: warn-cashier <cashier_id> <points>" << std::endl;
             std::cout << "Points: 100 (low), 200 (medium), 300 (high)" << std::endl;
             return;
         }
 
-        if (!isValidNumber(cashier_id_str) || !isValidNumber(points_str)) {
+        if (!isValidNumber(cashierIdStr) || !isValidNumber(pointsStr))
+        {
             std::cout << "Invalid number format." << std::endl;
             return;
         }
 
-        int cashier_id = 0, points = 0;
-        for (int i = 0; cashier_id_str[i] != '\0'; i++) {
-            cashier_id = cashier_id * 10 + (cashier_id_str[i] - '0');
+        int cashierId = 0, points = 0;
+        for (int i = 0; cashierIdStr[i] != '\0'; i++)
+        {
+            cashierId = cashierId * 10 + (cashierIdStr[i] - '0');
         }
-        for (int i = 0; points_str[i] != '\0'; i++) {
-            points = points * 10 + (points_str[i] - '0');
+        for (int i = 0; pointsStr[i] != '\0'; i++)
+        {
+            points = points * 10 + (pointsStr[i] - '0');
         }
 
-        if (points != 100 && points != 200 && points != 300) {
+        if (points != 100 && points != 200 && points != 300)
+        {
             std::cout << "Invalid warning points. Use 100, 200, or 300." << std::endl;
             return;
         }
 
-        Worker* worker = worker_mgr.findWorkerById(cashier_id);
-        if (!worker || !strCompare(worker->getRole(), "Cashier")) {
+        Worker* worker = workerMgr.findWorkerById(cashierId);
+        if (!worker || !strCompare(worker->getRole(), "Cashier"))
+        {
             std::cout << "Cashier not found." << std::endl;
             return;
         }
@@ -656,33 +833,39 @@ private:
         const char* reason = "Disciplinary action by manager";
         cashier->addWarning(points, reason);
 
-        std::cout << "Warning added to cashier " << cashier_id << " (" << points << " points)" << std::endl;
+        std::cout << "Warning added to cashier " << cashierId << " (" << points << " points)" << std::endl;
     }
 
-    void executePromoteCashier() {
-        char cashier_id_str[20], special_code[10];
-        if (!parseIdCodeArgs(args_buffer, cashier_id_str, special_code)) {
+    void executePromoteCashier()
+    {
+        char cashierIdStr[20], specialCode[10];
+        if (!parseIdCodeArgs(argsBuffer, cashierIdStr, specialCode))
+        {
             std::cout << "Usage: promote-cashier <cashier_id> <special_code>" << std::endl;
             return;
         }
 
-        if (!isValidNumber(cashier_id_str)) {
+        if (!isValidNumber(cashierIdStr))
+        {
             std::cout << "Invalid cashier ID format." << std::endl;
             return;
         }
 
-        if (!auth.validateManagerCode(special_code)) {
+        if (!auth.validateManagerCode(specialCode))
+        {
             std::cout << "Invalid special code." << std::endl;
             return;
         }
 
-        int cashier_id = 0;
-        for (int i = 0; cashier_id_str[i] != '\0'; i++) {
-            cashier_id = cashier_id * 10 + (cashier_id_str[i] - '0');
+        int cashierId = 0;
+        for (int i = 0; cashierIdStr[i] != '\0'; i++)
+        {
+            cashierId = cashierId * 10 + (cashierIdStr[i] - '0');
         }
 
-        Worker* worker = worker_mgr.findWorkerById(cashier_id);
-        if (!worker || !strCompare(worker->getRole(), "Cashier")) {
+        Worker* worker = workerMgr.findWorkerById(cashierId);
+        if (!worker || !strCompare(worker->getRole(), "Cashier"))
+        {
             std::cout << "Cashier not found." << std::endl;
             return;
         }
@@ -690,38 +873,46 @@ private:
         Cashier* cashier = static_cast<Cashier*>(worker);
         Manager* manager = static_cast<Manager*>(auth.getCurrentUser());
 
-        if (manager->promoteCashier(cashier, special_code)) {
+        if (manager->promoteCashier(cashier, specialCode))
+        {
             std::cout << "Cashier promoted successfully!" << std::endl;
         }
-        else {
+        else
+        {
             std::cout << "Failed to promote cashier. Check requirements (50+ transactions, <100 warning points)." << std::endl;
         }
     }
 
-    void executeFireCashier() {
-        char cashier_id_str[20], special_code[10];
-        if (!parseIdCodeArgs(args_buffer, cashier_id_str, special_code)) {
+    void executeFireCashier()
+    {
+        char cashierIdStr[20], specialCode[10];
+        if (!parseIdCodeArgs(argsBuffer, cashierIdStr, specialCode))
+        {
             std::cout << "Usage: fire-cashier <cashier_id> <special_code>" << std::endl;
             return;
         }
 
-        if (!isValidNumber(cashier_id_str)) {
+        if (!isValidNumber(cashierIdStr))
+        {
             std::cout << "Invalid cashier ID format." << std::endl;
             return;
         }
 
-        if (!auth.validateManagerCode(special_code)) {
+        if (!auth.validateManagerCode(specialCode))
+        {
             std::cout << "Invalid special code." << std::endl;
             return;
         }
 
-        int cashier_id = 0;
-        for (int i = 0; cashier_id_str[i] != '\0'; i++) {
-            cashier_id = cashier_id * 10 + (cashier_id_str[i] - '0');
+        int cashierId = 0;
+        for (int i = 0; cashierIdStr[i] != '\0'; i++)
+        {
+            cashierId = cashierId * 10 + (cashierIdStr[i] - '0');
         }
 
-        Worker* worker = worker_mgr.findWorkerById(cashier_id);
-        if (!worker || !strCompare(worker->getRole(), "Cashier")) {
+        Worker* worker = workerMgr.findWorkerById(cashierId);
+        if (!worker || !strCompare(worker->getRole(), "Cashier"))
+        {
             std::cout << "Cashier not found." << std::endl;
             return;
         }
@@ -729,146 +920,138 @@ private:
         Cashier* cashier = static_cast<Cashier*>(worker);
         Manager* manager = static_cast<Manager*>(auth.getCurrentUser());
 
-        if (manager->fireCashier(cashier, special_code)) {
+        if (manager->fireCashier(cashier, specialCode))
+        {
             std::cout << "Cashier fired successfully!" << std::endl;
-            worker_mgr.removeWorker(cashier_id);
+            workerMgr.removeWorker(cashierId);
         }
-        else {
+        else
+        {
             std::cout << "Failed to fire cashier." << std::endl;
         }
     }
 
-    void executeSell() {
-        if (!auth.isCashier()) {
+    void executeSell()
+    {
+        if (!auth.isCashier())
+        {
             std::cout << "Only cashiers can perform sales." << std::endl;
             return;
         }
 
-        transaction_mgr.processSellCommand(auth.getCurrentUserId());
+        transactionMgr.processSellCommand(auth.getCurrentUserId());
     }
 
-    bool parseLoginArgs(const char* args, char* id_str, char* password) {
-        int space_pos = -1;
-        for (int i = 0; args[i] != '\0'; i++) {
-            if (isWhitespace(args[i])) {
-                space_pos = i;
+    bool parseLoginArgs(const char* args, char* idStr, char* password)
+    {
+        int spacePos = -1;
+        for (int i = 0; args[i] != '\0'; i++)
+        {
+            if (isWhitespace(args[i]))
+            {
+                spacePos = i;
                 break;
             }
         }
 
-        if (space_pos == -1) return false;
+        if (spacePos == -1) return false;
 
-        for (int i = 0; i < space_pos && i < 19; i++) {
-            id_str[i] = args[i];
+        for (int i = 0; i < spacePos && i < 19; i++)
+        {
+            idStr[i] = args[i];
         }
-        id_str[space_pos < 19 ? space_pos : 19] = '\0';
+        idStr[spacePos < 19 ? spacePos : 19] = '\0';
 
-        int pwd_start = space_pos;
-        while (args[pwd_start] != '\0' && isWhitespace(args[pwd_start])) {
-            pwd_start++;
+        int pwdStart = spacePos;
+        while (args[pwdStart] != '\0' && isWhitespace(args[pwdStart]))
+        {
+            pwdStart++;
         }
 
-        strCopy(password, &args[pwd_start], 100);
+        strCopy(password, &args[pwdStart], 100);
 
-        return getStrLength(id_str) > 0 && getStrLength(password) > 0;
+        return getStrLength(idStr) > 0 && getStrLength(password) > 0;
     }
 
-    bool parseRegisterArgs(const char* args, char* role, char* first_name, char* last_name,
-        char* phone, char* age_str, char* password) {
-        char temp_args[900];
-        strCopy(temp_args, args, sizeof(temp_args));
-
-        char* tokens[6];
-        int token_count = 0;
-
-        int start = 0;
-        for (int i = 0; i <= getStrLength(temp_args) && token_count < 6; i++) {
-            if (temp_args[i] == ' ' || temp_args[i] == '\0') {
-                temp_args[i] = '\0';
-                tokens[token_count++] = &temp_args[start];
-
-                while (temp_args[i + 1] == ' ') i++;
-                start = i + 1;
-            }
-        }
-
-        if (token_count != 6) return false;
-
-        strCopy(role, tokens[0], 20);
-        strCopy(first_name, tokens[1], 50);
-        strCopy(last_name, tokens[2], 50);
-        strCopy(phone, tokens[3], 20);
-        strCopy(age_str, tokens[4], 10);
-        strCopy(password, tokens[5], 100);
-
-        return true;
-    }
-
-    bool parseCategoryArgs(const char* args, char* name, char* description) {
-        int space_pos = -1;
-        for (int i = 0; args[i] != '\0'; i++) {
-            if (isWhitespace(args[i])) {
-                space_pos = i;
+    bool parseCategoryArgs(const char* args, char* name, char* description)
+    {
+        int spacePos = -1;
+        for (int i = 0; args[i] != '\0'; i++)
+        {
+            if (isWhitespace(args[i]))
+            {
+                spacePos = i;
                 break;
             }
         }
 
-        if (space_pos == -1) return false;
+        if (spacePos == -1) return false;
 
-        for (int i = 0; i < space_pos && i < 99; i++) {
+        for (int i = 0; i < spacePos && i < 99; i++)
+        {
             name[i] = args[i];
         }
-        name[space_pos < 99 ? space_pos : 99] = '\0';
+        name[spacePos < 99 ? spacePos : 99] = '\0';
 
-        int desc_start = space_pos;
-        while (args[desc_start] != '\0' && isWhitespace(args[desc_start])) {
-            desc_start++;
+        int descStart = spacePos;
+        while (args[descStart] != '\0' && isWhitespace(args[descStart]))
+        {
+            descStart++;
         }
 
-        strCopy(description, &args[desc_start], 300);
+        strCopy(description, &args[descStart], 300);
 
         return getStrLength(name) > 0 && getStrLength(description) > 0;
     }
 
-    bool parseIdCodeArgs(const char* args, char* id_str, char* code) {
-        int space_pos = -1;
-        for (int i = 0; args[i] != '\0'; i++) {
-            if (isWhitespace(args[i])) {
-                space_pos = i;
+    bool parseIdCodeArgs(const char* args, char* idStr, char* code)
+    {
+        int spacePos = -1;
+        for (int i = 0; args[i] != '\0'; i++)
+        {
+            if (isWhitespace(args[i]))
+            {
+                spacePos = i;
                 break;
             }
         }
 
-        if (space_pos == -1) return false;
+        if (spacePos == -1) return false;
 
-        for (int i = 0; i < space_pos && i < 19; i++) {
-            id_str[i] = args[i];
+        for (int i = 0; i < spacePos && i < 19; i++)
+        {
+            idStr[i] = args[i];
         }
-        id_str[space_pos < 19 ? space_pos : 19] = '\0';
+        idStr[spacePos < 19 ? spacePos : 19] = '\0';
 
-        int code_start = space_pos;
-        while (args[code_start] != '\0' && isWhitespace(args[code_start])) {
-            code_start++;
+        int codeStart = spacePos;
+        while (args[codeStart] != '\0' && isWhitespace(args[codeStart]))
+        {
+            codeStart++;
         }
 
-        strCopy(code, &args[code_start], 10);
+        strCopy(code, &args[codeStart], 10);
 
-        return getStrLength(id_str) > 0 && getStrLength(code) > 0;
+        return getStrLength(idStr) > 0 && getStrLength(code) > 0;
     }
 
-    bool parseIdPointsArgs(const char* args, char* id_str, char* points_str) {
-        return parseIdCodeArgs(args, id_str, points_str);
+    bool parseIdPointsArgs(const char* args, char* idStr, char* pointsStr)
+    {
+        return parseIdCodeArgs(args, idStr, pointsStr);
     }
 };
 
-int main() {
+int main()
+{
     std::cout << "Initializing FMI Supermarket Management System..." << std::endl;
 
-    try {
+    try
+    {
         CLISystem system;
         system.run();
     }
-    catch (...) {
+    catch (...)
+    {
         std::cout << "System error occurred. Shutting down safely..." << std::endl;
         return 1;
     }

@@ -1,1 +1,4 @@
 CATEGORY:1:TestCat:Test categoryadd-product product_by_unit[Bread | TestCat | 2.50 | 50]register cashier Test User 123456789 25 test123list-pendingapprove [CASHIER_ID] [SPECIAL_CODE]logoutlogin [CASHIER_ID] test123sell
+CATEGORY:1:Fruits:Fresh fruits and vegetables
+CATEGORY:2:Dairy:Milk and cheese products
+CATEGORY:3:Dairy :Auto-created category
