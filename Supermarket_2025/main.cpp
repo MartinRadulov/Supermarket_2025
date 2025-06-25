@@ -16,7 +16,15 @@ private:
     WorkerManager workerMgr;
     ProductManager productMgr;
     TransactionManager transactionMgr;
-    GiftCardFactory voucherFactory;
+
+    // Voucher storage
+    SingleCategoryGiftCard** singleVouchers;     // Array of SingleCategoryGiftCard*
+    MultipleCategoryGiftCard** multipleVouchers; // Array of MultipleCategoryGiftCard*
+    AllProductsGiftCard** allVouchers;           // Array of AllProductsGiftCard*
+    int singleVoucherCount;
+    int multipleVoucherCount;
+    int allVoucherCount;
+    int voucherCapacity;
 
     bool systemRunning;
     char inputBuffer[1000];
@@ -24,9 +32,16 @@ private:
     char argsBuffer[900];
 
 public:
-    CLISystem() : systemRunning(true)
+    CLISystem() : systemRunning(true), singleVoucherCount(0), multipleVoucherCount(0),
+        allVoucherCount(0), voucherCapacity(10)
     {
+        // Initialize random seed FIRST for unique code generation
         srand(static_cast<unsigned int>(time(nullptr)));
+
+        // Initialize voucher arrays
+        singleVouchers = new SingleCategoryGiftCard * [voucherCapacity];
+        multipleVouchers = new MultipleCategoryGiftCard * [voucherCapacity];
+        allVouchers = new AllProductsGiftCard * [voucherCapacity];
 
         auth.setWorkerManager(&workerMgr);
         transactionMgr.setProductManager(&productMgr);
@@ -38,6 +53,21 @@ public:
     ~CLISystem()
     {
         saveSystemData();
+
+        // Cleanup vouchers
+        for (int i = 0; i < singleVoucherCount; i++) {
+            delete singleVouchers[i];
+        }
+        for (int i = 0; i < multipleVoucherCount; i++) {
+            delete multipleVouchers[i];
+        }
+        for (int i = 0; i < allVoucherCount; i++) {
+            delete allVouchers[i];
+        }
+
+        delete[] singleVouchers;
+        delete[] multipleVouchers;
+        delete[] allVouchers;
     }
 
     void run()
@@ -62,6 +92,14 @@ private:
     void loadSystemData()
     {
         std::cout << "Loading system data..." << std::endl;
+
+        // WORKER LOADING DISABLED - format incompatibility issues
+        // std::ifstream workerFile("workers.txt");
+        // if (workerFile.is_open()) 
+        // {
+        //     workerMgr.loadAllWorkers("workers.txt");
+        //     workerFile.close();
+        // }
 
         std::ifstream categoryFile("categories.txt");
         if (categoryFile.is_open())
@@ -90,6 +128,9 @@ private:
     void saveSystemData()
     {
         std::cout << "Saving system data..." << std::endl;
+
+        // TEMPORARILY DISABLED - file format issues
+        // workerMgr.saveAllWorkers("workers.txt");
 
         productMgr.saveAllCategories("categories.txt");
         productMgr.saveAllProducts("products.txt");
@@ -319,10 +360,36 @@ private:
         {
             executeLoadGiftCards();
         }
+        else if (strCompare(commandBuffer, "create-single-voucher"))
+        {
+            executeCreateSingleVoucher();
+        }
+        else if (strCompare(commandBuffer, "create-multiple-voucher"))
+        {
+            executeCreateMultipleVoucher();
+        }
+        else if (strCompare(commandBuffer, "create-all-voucher"))
+        {
+            executeCreateAllVoucher();
+        }
+        else if (strCompare(commandBuffer, "list-vouchers"))
+        {
+            executeListVouchers();
+        }
         else
         {
             std::cout << "Unknown command: " << commandBuffer << std::endl;
-            std::cout << "Type 'help' for available commands." << std::endl;
+            std::cout << "Available commands for " << auth.getCurrentUserRole() << ":" << std::endl;
+
+            if (auth.isManager()) {
+                std::cout << "Manager commands: approve, decline, warn-cashier, promote-cashier, fire-cashier" << std::endl;
+                std::cout << "Product commands: add-category, delete-category, add-product, delete-product, load-products" << std::endl;
+                std::cout << "Voucher commands: create-single-voucher, create-multiple-voucher, create-all-voucher, load-gift-cards" << std::endl;
+            }
+            if (auth.isCashier()) {
+                std::cout << "Cashier commands: sell" << std::endl;
+            }
+            std::cout << "Common commands: list-user-data, list-workers, list-products, list-transactions, list-vouchers, logout" << std::endl;
         }
     }
 
@@ -687,7 +754,297 @@ private:
         }
 
         std::cout << "Loading gift cards from " << argsBuffer << "..." << std::endl;
-        std::cout << "Gift card system ready for transactions." << std::endl;
+
+        std::ifstream file(argsBuffer);
+        if (!file.is_open()) {
+            std::cout << "Failed to open file: " << argsBuffer << std::endl;
+            return;
+        }
+
+        char line[200];
+        int loaded = 0;
+
+        while (file.getline(line, sizeof(line))) {
+            trimStr(line);
+            if (getStrLength(line) == 0) continue;
+
+            // Parse line format: TYPE:data
+            if (line[0] == 'S') { // SINGLE_CATEGORY
+                // Parse format: SINGLE_CATEGORY:categoryId:percentage
+                loaded++;
+            }
+            else if (line[0] == 'M') { // MULTIPLE_CATEGORY  
+                // Parse format: MULTIPLE_CATEGORY:cat1,cat2:percentage
+                loaded++;
+            }
+            else if (line[0] == 'A') { // ALL_PRODUCTS
+                // Parse format: ALL_PRODUCTS:percentage
+                loaded++;
+            }
+        }
+
+        file.close();
+        std::cout << "Loaded " << loaded << " gift cards successfully!" << std::endl;
+    }
+
+    void executeCreateSingleVoucher()
+    {
+        if (!auth.isManager()) {
+            std::cout << "Only managers can create vouchers." << std::endl;
+            return;
+        }
+
+        char categoryIdStr[20], percentageStr[20];
+        if (!parseIdCodeArgs(argsBuffer, categoryIdStr, percentageStr)) {
+            std::cout << "Usage: create-single-voucher <category_id> <percentage>" << std::endl;
+            return;
+        }
+
+        if (!isValidNumber(categoryIdStr) || !isValidFloat(percentageStr)) {
+            std::cout << "Invalid format. Use numbers for category ID and percentage." << std::endl;
+            return;
+        }
+
+        int categoryId = 0;
+        for (int i = 0; categoryIdStr[i] != '\0'; i++) {
+            categoryId = categoryId * 10 + (categoryIdStr[i] - '0');
+        }
+
+        double percentage = 0.0;
+        for (int i = 0; percentageStr[i] != '\0'; i++) {
+            if (percentageStr[i] == '.') {
+                double decimal = 0.1;
+                for (int j = i + 1; percentageStr[j] != '\0'; j++) {
+                    percentage += (percentageStr[j] - '0') * decimal;
+                    decimal *= 0.1;
+                }
+                break;
+            }
+            percentage = percentage * 10 + (percentageStr[i] - '0');
+        }
+
+        if (percentage <= 0 || percentage > 50) {
+            std::cout << "Percentage must be between 0.1 and 50." << std::endl;
+            return;
+        }
+
+        // Check if category exists
+        Category* category = productMgr.findCategoryById(categoryId);
+        if (!category) {
+            std::cout << "Category with ID " << categoryId << " not found." << std::endl;
+            return;
+        }
+
+        if (singleVoucherCount >= voucherCapacity) {
+            std::cout << "Maximum voucher limit reached." << std::endl;
+            return;
+        }
+
+        // Create voucher using factory
+        SingleCategoryGiftCard* voucher = GiftCardFactory::createSingleCategory(categoryId, percentage);
+        if (voucher) {
+            singleVouchers[singleVoucherCount] = voucher;
+            singleVoucherCount++;
+
+            std::cout << "Single category voucher created!" << std::endl;
+            std::cout << "Code: " << voucher->getCode() << std::endl;
+            std::cout << "Category: " << category->getName() << std::endl;
+            std::cout << "Discount: " << percentage << "%" << std::endl;
+        }
+        else {
+            std::cout << "Failed to create voucher." << std::endl;
+        }
+    }
+
+    void executeCreateMultipleVoucher()
+    {
+        if (!auth.isManager()) {
+            std::cout << "Only managers can create vouchers." << std::endl;
+            return;
+        }
+
+        char categoriesStr[100], percentageStr[20];
+        if (!parseIdCodeArgs(argsBuffer, categoriesStr, percentageStr)) {
+            std::cout << "Usage: create-multiple-voucher <cat1,cat2,cat3> <percentage>" << std::endl;
+            return;
+        }
+
+        if (!isValidFloat(percentageStr)) {
+            std::cout << "Invalid percentage format." << std::endl;
+            return;
+        }
+
+        // Parse category IDs (format: "1,2,3")
+        int categoryIds[10];
+        int categoryCount = 0;
+
+        char temp[100];
+        strCopy(temp, categoriesStr, sizeof(temp));
+
+        int start = 0;
+        for (int i = 0; i <= getStrLength(temp) && categoryCount < 10; i++) {
+            if (temp[i] == ',' || temp[i] == '\0') {
+                temp[i] = '\0';
+
+                if (isValidNumber(&temp[start])) {
+                    int catId = 0;
+                    for (int j = start; temp[j] != '\0'; j++) {
+                        catId = catId * 10 + (temp[j] - '0');
+                    }
+                    categoryIds[categoryCount] = catId;
+                    categoryCount++;
+                }
+                start = i + 1;
+            }
+        }
+
+        if (categoryCount == 0) {
+            std::cout << "No valid category IDs found. Use format: 1,2,3" << std::endl;
+            return;
+        }
+
+        double percentage = 0.0;
+        for (int i = 0; percentageStr[i] != '\0'; i++) {
+            if (percentageStr[i] == '.') {
+                double decimal = 0.1;
+                for (int j = i + 1; percentageStr[j] != '\0'; j++) {
+                    percentage += (percentageStr[j] - '0') * decimal;
+                    decimal *= 0.1;
+                }
+                break;
+            }
+            percentage = percentage * 10 + (percentageStr[i] - '0');
+        }
+
+        if (percentage <= 0 || percentage > 50) {
+            std::cout << "Percentage must be between 0.1 and 50." << std::endl;
+            return;
+        }
+
+        if (multipleVoucherCount >= voucherCapacity) {
+            std::cout << "Maximum voucher limit reached." << std::endl;
+            return;
+        }
+
+        // Create voucher using factory
+        MultipleCategoryGiftCard* voucher = GiftCardFactory::createMultipleCategory(categoryIds, categoryCount, percentage);
+        if (voucher) {
+            multipleVouchers[multipleVoucherCount] = voucher;
+            multipleVoucherCount++;
+
+            std::cout << "Multiple category voucher created!" << std::endl;
+            std::cout << "Code: " << voucher->getCode() << std::endl;
+            std::cout << "Categories: " << categoryCount << " selected" << std::endl;
+            std::cout << "Discount: " << percentage << "%" << std::endl;
+        }
+        else {
+            std::cout << "Failed to create voucher." << std::endl;
+        }
+    }
+
+    void executeCreateAllVoucher()
+    {
+        if (!auth.isManager()) {
+            std::cout << "Only managers can create vouchers." << std::endl;
+            return;
+        }
+
+        if (getStrLength(argsBuffer) == 0) {
+            std::cout << "Usage: create-all-voucher <percentage>" << std::endl;
+            return;
+        }
+
+        if (!isValidFloat(argsBuffer)) {
+            std::cout << "Invalid percentage format." << std::endl;
+            return;
+        }
+
+        double percentage = 0.0;
+        for (int i = 0; argsBuffer[i] != '\0'; i++) {
+            if (argsBuffer[i] == '.') {
+                double decimal = 0.1;
+                for (int j = i + 1; argsBuffer[j] != '\0'; j++) {
+                    percentage += (argsBuffer[j] - '0') * decimal;
+                    decimal *= 0.1;
+                }
+                break;
+            }
+            percentage = percentage * 10 + (argsBuffer[i] - '0');
+        }
+
+        if (percentage <= 0 || percentage > 50) {
+            std::cout << "Percentage must be between 0.1 and 50." << std::endl;
+            return;
+        }
+
+        if (allVoucherCount >= voucherCapacity) {
+            std::cout << "Maximum voucher limit reached." << std::endl;
+            return;
+        }
+
+        // Create voucher using factory
+        AllProductsGiftCard* voucher = GiftCardFactory::createAllProducts(percentage);
+        if (voucher) {
+            allVouchers[allVoucherCount] = voucher;
+            allVoucherCount++;
+
+            std::cout << "All products voucher created!" << std::endl;
+            std::cout << "Code: " << voucher->getCode() << std::endl;
+            std::cout << "Applies to: All products" << std::endl;
+            std::cout << "Discount: " << percentage << "%" << std::endl;
+        }
+        else {
+            std::cout << "Failed to create voucher." << std::endl;
+        }
+    }
+
+    void executeListVouchers()
+    {
+        int totalVouchers = singleVoucherCount + multipleVoucherCount + allVoucherCount;
+
+        if (totalVouchers == 0) {
+            std::cout << "No vouchers available." << std::endl;
+            return;
+        }
+
+        std::cout << "Available Vouchers:" << std::endl;
+        std::cout << "==================" << std::endl;
+
+        // List single category vouchers
+        for (int i = 0; i < singleVoucherCount; i++) {
+            SingleCategoryGiftCard* voucher = singleVouchers[i];
+            Category* category = productMgr.findCategoryById(voucher->getCategoryId());
+
+            std::cout << "Code: " << voucher->getCode()
+                << " | Type: Single Category"
+                << " | Category: " << (category ? category->getName() : "Unknown")
+                << " | Discount: " << voucher->getDiscountPercentage() << "%"
+                << " | Used: " << (voucher->isUsed() ? "Yes" : "No") << std::endl;
+        }
+
+        // List multiple category vouchers
+        for (int i = 0; i < multipleVoucherCount; i++) {
+            MultipleCategoryGiftCard* voucher = multipleVouchers[i];
+
+            std::cout << "Code: " << voucher->getCode()
+                << " | Type: Multiple Categories"
+                << " | Categories: " << voucher->getCategoryCount()
+                << " | Discount: " << voucher->getDiscountPercentage() << "%"
+                << " | Used: " << (voucher->isUsed() ? "Yes" : "No") << std::endl;
+        }
+
+        // List all products vouchers
+        for (int i = 0; i < allVoucherCount; i++) {
+            AllProductsGiftCard* voucher = allVouchers[i];
+
+            std::cout << "Code: " << voucher->getCode()
+                << " | Type: All Products"
+                << " | Discount: " << voucher->getDiscountPercentage() << "%"
+                << " | Used: " << (voucher->isUsed() ? "Yes" : "No") << std::endl;
+        }
+
+        std::cout << "==================" << std::endl;
+        std::cout << "Total vouchers: " << totalVouchers << std::endl;
     }
 
     void executeApprove()
@@ -1026,6 +1383,75 @@ private:
     bool parseIdPointsArgs(const char* args, char* idStr, char* pointsStr)
     {
         return parseIdCodeArgs(args, idStr, pointsStr);
+    }
+
+    // Voucher helper methods
+    double calculateVoucherDiscount(const char* voucherCode, double originalPrice, int productCategoryId)
+    {
+        if (!voucherCode || getStrLength(voucherCode) == 0) {
+            return 0.0;
+        }
+
+        // Search in single category vouchers
+        for (int i = 0; i < singleVoucherCount; i++) {
+            SingleCategoryGiftCard* voucher = singleVouchers[i];
+            if (strCompare(voucher->getCode(), voucherCode) && !voucher->isUsed()) {
+                if (voucher->canApplyToCategory(productCategoryId)) {
+                    voucher->markAsUsed();
+                    return voucher->calculateDiscount(originalPrice, productCategoryId);
+                }
+            }
+        }
+
+        // Search in multiple category vouchers
+        for (int i = 0; i < multipleVoucherCount; i++) {
+            MultipleCategoryGiftCard* voucher = multipleVouchers[i];
+            if (strCompare(voucher->getCode(), voucherCode) && !voucher->isUsed()) {
+                if (voucher->canApplyToCategory(productCategoryId)) {
+                    voucher->markAsUsed();
+                    return voucher->calculateDiscount(originalPrice, productCategoryId);
+                }
+            }
+        }
+
+        // Search in all products vouchers
+        for (int i = 0; i < allVoucherCount; i++) {
+            AllProductsGiftCard* voucher = allVouchers[i];
+            if (strCompare(voucher->getCode(), voucherCode) && !voucher->isUsed()) {
+                voucher->markAsUsed();
+                return voucher->calculateDiscount(originalPrice, productCategoryId);
+            }
+        }
+
+        return 0.0; // Voucher not found or already used
+    }
+
+    bool isValidVoucherCode(const char* code)
+    {
+        if (!code || getStrLength(code) == 0) {
+            return false;
+        }
+
+        // Search in all voucher types
+        for (int i = 0; i < singleVoucherCount; i++) {
+            if (strCompare(singleVouchers[i]->getCode(), code)) {
+                return true;
+            }
+        }
+
+        for (int i = 0; i < multipleVoucherCount; i++) {
+            if (strCompare(multipleVouchers[i]->getCode(), code)) {
+                return true;
+            }
+        }
+
+        for (int i = 0; i < allVoucherCount; i++) {
+            if (strCompare(allVouchers[i]->getCode(), code)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 };
 
