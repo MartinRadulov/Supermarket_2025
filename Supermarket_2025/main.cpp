@@ -26,7 +26,6 @@ private:
 public:
     CLISystem() : systemRunning(true)
     {
-        // Initialize random seed FIRST for unique code generation
         srand(static_cast<unsigned int>(time(nullptr)));
 
         auth.setWorkerManager(&workerMgr);
@@ -64,14 +63,6 @@ private:
     {
         std::cout << "Loading system data..." << std::endl;
 
-        // WORKER LOADING DISABLED - format incompatibility issues
-        // std::ifstream workerFile("workers.txt");
-        // if (workerFile.is_open()) 
-        // {
-        //     workerMgr.loadAllWorkers("workers.txt");
-        //     workerFile.close();
-        // }
-
         std::ifstream categoryFile("categories.txt");
         if (categoryFile.is_open())
         {
@@ -99,9 +90,6 @@ private:
     void saveSystemData()
     {
         std::cout << "Saving system data..." << std::endl;
-
-        // TEMPORARILY DISABLED - file format issues
-        // workerMgr.saveAllWorkers("workers.txt");
 
         productMgr.saveAllCategories("categories.txt");
         productMgr.saveAllProducts("products.txt");
