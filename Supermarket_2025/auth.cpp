@@ -40,24 +40,24 @@ bool AuthSystem::login(int worker_id, const char* password)
         return false;
     }
 
-    Worker* found_worker = workerManager->findWorkerById(worker_id);
-    if (!found_worker) 
+    Worker* foundWorker = workerManager->findWorkerById(worker_id);
+    if (!foundWorker) 
     {
         std::cout << "Invalid login credentials." << std::endl;
         return false;
     }
 
-    if (!found_worker->authenticate(password))
+    if (!foundWorker->authenticate(password))
     {
         std::cout << "Invalid login credentials." << std::endl;
         return false;
     }
 
-    Worker* authenticated_worker = found_worker;
+    Worker* authenticatedWorker = foundWorker;
 
-    if (strCompare(authenticated_worker->getRole(), "Cashier"))
+    if (strCompare(authenticatedWorker->getRole(), "Cashier"))
     {
-        Cashier* cashier = static_cast<Cashier*>(authenticated_worker);
+        Cashier* cashier = static_cast<Cashier*>(authenticatedWorker);
         if (!cashier->isApproved())
         {
             std::cout << "Cashier registration is pending manager approval." << std::endl;
@@ -65,12 +65,12 @@ bool AuthSystem::login(int worker_id, const char* password)
         }
     }
 
-    currentUser = authenticated_worker;
+    currentUser = authenticatedWorker;
     isLoggedInV = true;
 
-    char name_buffer[100];
-    authenticated_worker->getFullName(name_buffer, sizeof(name_buffer));
-    std::cout << "User " << name_buffer << " with ID: " << worker_id
+    char nameBuffer[100];
+    authenticatedWorker->getFullName(nameBuffer, sizeof(nameBuffer));
+    std::cout << "User " << nameBuffer << " with ID: " << worker_id
         << " has been logged into the system!" << std::endl;
 
     return true;
@@ -84,9 +84,9 @@ void AuthSystem::logout()
         return;
     }
 
-    char name_buffer[100];
-    currentUser->getFullName(name_buffer, sizeof(name_buffer));
-    std::cout << "User " << name_buffer << " has been logged out." << std::endl;
+    char nameBuffer[100];
+    currentUser->getFullName(nameBuffer, sizeof(nameBuffer));
+    std::cout << "User " << nameBuffer << " has been logged out." << std::endl;
 
     clearCurrentUser();
 }
