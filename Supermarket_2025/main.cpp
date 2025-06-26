@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
@@ -91,6 +91,17 @@ private:
     void loadSystemData()
     {
         std::cout << "Loading system data..." << std::endl;
+
+        std::ifstream workerFile("workers.txt");
+        if (workerFile.is_open())
+        {
+            workerFile.close();
+            workerMgr.loadAllWorkers("workers.txt");
+        }
+        else
+        {
+            std::cout << "No workers file found. Will create default manager only." << std::endl;
+        }
 
         std::ifstream categoryFile("categories.txt");
         if (categoryFile.is_open())
@@ -241,10 +252,11 @@ private:
     {
         std::cout << "Saving system data..." << std::endl;
 
+        workerMgr.saveAllWorkers("workers.txt");
+
         productMgr.saveAllCategories("categories.txt");
         productMgr.saveAllProducts("products.txt");
         transactionMgr.saveAllTransactions("transactions.txt");
-
         saveAllVouchers("vouchers.txt");
 
         std::cout << "System data saved successfully." << std::endl;
@@ -254,7 +266,7 @@ private:
     {
         if (workerMgr.getWorkerCount() == 0)
         {
-            std::cout << "Creating default manager account..." << std::endl;
+            std::cout << "No workers found. Creating default manager account..." << std::endl;
 
             Manager* defaultMgr = new Manager(Worker::generateNewId(), "Admin", "Manager",
                 "0881234567", 30, "admin123");
@@ -263,15 +275,22 @@ private:
             if (workerMgr.addWorker(defaultMgr))
             {
                 defaultMgr->generateSpecialCode();
-                std::cout << "Default manager created with ID: " << defaultMgr->getId()
-                    << ", Password: admin123" << std::endl;
+                std::cout << "Default manager created successfully!" << std::endl;
+                std::cout << "ID: " << defaultMgr->getId() << std::endl;
+                std::cout << "Password: admin123" << std::endl;
                 std::cout << "Special code: " << defaultMgr->getSpecialCode() << std::endl;
+
+                workerMgr.saveAllWorkers("workers.txt");
             }
             else
             {
                 std::cout << "Failed to add default manager!" << std::endl;
                 delete defaultMgr;
             }
+        }
+        else
+        {
+            std::cout << "Found " << workerMgr.getWorkerCount() << " existing workers." << std::endl;
         }
     }
 
@@ -491,6 +510,22 @@ private:
         {
             executeManualSaveVouchers();
         }
+        else if (strCompare(commandBuffer, "save-workers"))
+        {
+            executeManualSaveWorkers();
+        }
+        else if (strCompare(commandBuffer, "load-workers"))
+        {
+            executeManualLoadWorkers();
+        }
+        else if (strCompare(commandBuffer, "save-workers"))
+        {
+            executeManualSaveWorkers();
+        }
+        else if (strCompare(commandBuffer, "load-workers"))
+        {
+            executeManualLoadWorkers();
+        }
         else
         {
             std::cout << "Unknown command: " << commandBuffer << std::endl;
@@ -506,6 +541,35 @@ private:
             }
             std::cout << "Common commands: list-user-data, list-workers, list-products, list-transactions, list-vouchers, logout" << std::endl;
         }
+    }
+
+
+    void executeManualSaveWorkers()
+    {
+        if (!auth.isManager())
+        {
+            std::cout << "Only managers can save worker data." << std::endl;
+            return;
+        }
+
+        const char* filename = (getStrLength(argsBuffer) == 0) ? "workers.txt" : argsBuffer;
+
+        std::cout << "Saving workers to " << filename << "..." << std::endl;
+        workerMgr.saveAllWorkers(filename);
+    }
+
+    void executeManualLoadWorkers()
+    {
+        if (!auth.isManager())
+        {
+            std::cout << "Only managers can load worker data." << std::endl;
+            return;
+        }
+
+        const char* filename = (getStrLength(argsBuffer) == 0) ? "workers.txt" : argsBuffer;
+
+        std::cout << "Loading workers from " << filename << "..." << std::endl;
+        workerMgr.loadAllWorkers(filename);
     }
 
     void executeManualSaveVouchers()

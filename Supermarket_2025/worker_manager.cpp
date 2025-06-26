@@ -1,4 +1,4 @@
-#include "worker_manager.h"
+﻿#include "worker_manager.h"
 #include "workers.h"
 #include <iostream>
 #include <fstream>
@@ -93,7 +93,10 @@ bool WorkerManager::approveWorker(int id, int managerId, const char* specialCode
 void WorkerManager::saveAllWorkers(const char* filename) const
 {
     std::ofstream file(filename);
-    if (!file.is_open()) return;
+    if (!file.is_open()) {
+        std::cout << "Failed to open file for writing: " << filename << std::endl;
+        return;
+    }
 
     file << workerCount << "\n";
 
@@ -102,46 +105,95 @@ void WorkerManager::saveAllWorkers(const char* filename) const
         if (workers[i])
         {
             workers[i]->saveToFile(file);
+
+            Manager* manager = dynamic_cast<Manager*>(workers[i]);
+            if (manager)
+            {
+                manager->saveSpecialCodeToFile();
+            }
         }
     }
 
     file.close();
+    std::cout << "Successfully saved " << workerCount << " workers to " << filename << std::endl;
 }
 
 void WorkerManager::loadAllWorkers(const char* filename)
 {
     std::ifstream file(filename);
-    if (!file.is_open()) return;
+    if (!file.is_open()) {
+        std::cout << "Workers file not found: " << filename << std::endl;
+        return;
+    }
 
     clearWorkers();
 
     int count;
-    file >> count;
+    if (!(file >> count)) {
+        std::cout << "Error reading worker count from file." << std::endl;
+        file.close();
+        return;
+    }
     file.ignore();
+
+    std::cout << "Attempting to load " << count << " workers..." << std::endl;
 
     for (int i = 0; i < count; i++)
     {
-        char role[20];
-        file.getline(role, sizeof(role));
+        char role[50];
+        if (!file.getline(role, sizeof(role))) {
+            std::cout << "Error reading worker role at position " << i << std::endl;
+            break;
+        }
+        trimStr(role);
+
+        std::cout << "Reading worker " << (i + 1) << " with role: '" << role << "'" << std::endl;
 
         Worker* worker = nullptr;
+
         if (strCompare(role, "CASHIER"))
         {
             worker = new Cashier();
+            std::cout << "Creating Cashier..." << std::endl;
         }
         else if (strCompare(role, "MANAGER"))
         {
             worker = new Manager();
+            std::cout << "Creating Manager..." << std::endl;
+        }
+        else
+        {
+            std::cout << "❌ Unknown worker role: '" << role << "'" << std::endl;
+            char dummy[256];
+            for (int skip = 0; skip < 8; skip++) {
+                if (!file.getline(dummy, sizeof(dummy))) break;
+            }
+            continue;
         }
 
         if (worker)
         {
-            worker->loadFromFile(file);
-            addWorker(worker);
+            try {
+                worker->loadFromFile(file);
+
+                if (strCompare(role, "MANAGER"))
+                {
+                    Manager* manager = static_cast<Manager*>(worker);
+                    std::cout << "Manager special code: " << manager->getSpecialCode() << std::endl;
+                }
+
+                addWorker(worker);
+                std::cout << "Successfully loaded " << role << " with ID: " << worker->getId() << std::endl;
+            }
+            catch (...) {
+                std::cout << " Error loading worker data at position " << i << std::endl;
+                delete worker;
+            }
         }
     }
 
     file.close();
+    std::cout << "Successfully loaded " << workerCount << " out of " << count << " workers." << std::endl;
 }
 
 void WorkerManager::listAllWorkers() const

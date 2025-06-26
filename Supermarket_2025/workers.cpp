@@ -1,4 +1,4 @@
-#include "workers.h"
+﻿#include "workers.h"
 #define _CRT_SECURE_NO_WARNINGS
 
 static int nextWorkerId = 1000;
@@ -55,10 +55,10 @@ void Worker::loadFromFile(std::ifstream& file)
 	file.ignore();
 	file.getline(firstName, sizeof(firstName));
 	file.getline(lastName, sizeof(lastName));
-	file.getline(password, sizeof(password));
 	file.getline(phone, sizeof(phone));
 	file >> age;
 	file.ignore();
+	file.getline(password, sizeof(password));
 	file >> isApprovedV;
 	file.ignore();
 	isLoggedInV = false;
@@ -245,7 +245,7 @@ bool Cashier::hasSpecialPrivileges() const
 
 void Cashier::saveToFile(std::ofstream& file) const
 {
-	file << "Cachier\n";
+	file << "CASHIER\n";
 	Worker::saveToFile(file);
 	file << transactionCount << "\n";
 	file << warningCount << "\n";

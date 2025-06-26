@@ -1,4 +1,4 @@
-#include "auth.h"
+﻿#include "auth.h"
 #include "workers.h"
 #include "worker_manager.h"
 #include <iostream>
@@ -171,7 +171,7 @@ bool AuthSystem::canExecuteCashierCommand() const
 
 bool AuthSystem::canExecuteCommand(const char* command) const
 {
-    if (!isLoggedIn()) 
+    if (!isLoggedIn())
     {
         return false;
     }
@@ -184,13 +184,15 @@ bool AuthSystem::canExecuteCommand(const char* command) const
             strCompare(command, "delete-category") || strCompare(command, "add-product") ||
             strCompare(command, "delete-product") || strCompare(command, "load-products") ||
             strCompare(command, "load-gift-cards") || strCompare(command, "create-single-voucher") ||
-            strCompare(command, "create-multiple-voucher") || strCompare(command, "create-all-voucher")) 
+            strCompare(command, "create-multiple-voucher") || strCompare(command, "create-all-voucher") ||
+            strCompare(command, "save-workers") || strCompare(command, "load-workers") ||
+            strCompare(command, "save-vouchers"))
         {
             return true;
         }
     }
 
-    if (isCashier() && !hasPendingApproval()) 
+    if (isCashier() && !hasPendingApproval())
     {
         if (strCompare(command, "sell"))
         {
@@ -201,13 +203,14 @@ bool AuthSystem::canExecuteCommand(const char* command) const
     if (strCompare(command, "list-user-data") || strCompare(command, "list-workers") ||
         strCompare(command, "list-products") || strCompare(command, "list-feed") ||
         strCompare(command, "list-transactions") || strCompare(command, "list-vouchers") ||
-        strCompare(command, "logout") || strCompare(command, "leave")) 
+        strCompare(command, "logout") || strCompare(command, "leave"))
     {
         return true;
     }
 
     return false;
 }
+
 
 bool AuthSystem::validateManagerCode(const char* special_code) const
 {
